@@ -1,7 +1,5 @@
 # NHSS
 NH SEDIMENT AND STATISTIC (NHSS) is a computational tool developed for engineers and professionals involved in projects related to sediment transport in water resources, which allows the user to perform hydrosedimentological and statistical calculations. The computer routine has been written in Visual Basic for Applications.
-The manuals containing theory involved in the NH SEDIMENT AND STATISTIC computational tool will be available after tool publication. At this moment, there's some use orientations at web site https://sites.google.com/view/santosbb/nh-sediment-and-statistic
-
 
 GUIDE TO OPEN THE COMPUTATIONAL TOOL
 1.Unzip the package;
