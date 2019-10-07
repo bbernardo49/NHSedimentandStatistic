@@ -1,0 +1,430 @@
+Sub LimparCampoTela3()
+
+'
+    Range("B6:B100").Select
+    Selection.ClearContents
+    
+    Range("I6:Q100").Select
+    Selection.ClearContents
+    
+    Sheets("KolmogorovSmirnov").TB_EstatisticaKS.Text = ""
+    Sheets("KolmogorovSmirnov").TB_pvalue.Text = ""
+    Sheets("KolmogorovSmirnov").TB_Conclusao.Text = ""
+    
+End Sub
+
+
+Private Sub VoltarFrmEstatisticaBasica()
+
+With Planilha1
+.Visible = xlSheetVisible
+End With
+With Planilha4
+.Visible = xlSheetVeryHidden
+End With
+Frm_EstatisticaBasica.Show
+
+End Sub
+
+Private Sub TesteNormalidade()
+
+    Range("I6:Q100").Select
+    Selection.ClearContents
+       
+Dim cont As Long
+Dim n As Long
+Dim i As Long
+
+    cont = WorksheetFunction.CountA(Range("$B$6:$B$100"))
+    n = cont
+    
+    If n < 4 Then
+    Cells(5, 2).Select
+    MsgBox "Para o Teste de Normalidade, recomenda-se no mínimo 4 valores"
+    Exit Sub
+    
+    Else
+    End If
+
+'Sort-Order ascending- input data
+ Range("B6:B100").Select
+    Selection.Copy
+    ActiveWindow.SmallScroll Down:=-3
+    Range("I6").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Application.CutCopyMode = False
+    ActiveWorkbook.Worksheets("KolmogorovSmirnov").Sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("KolmogorovSmirnov").Sort.SortFields.Add2 Key:=Range("I6:I100") _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("KolmogorovSmirnov").Sort
+        .SetRange Range("I6:I100")
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+
+    End With
+    
+'Empirical Fn
+
+Dim Fn As Double
+
+
+    i = 6
+    Do
+    Fn = (i - 5) / n
+    Cells(i, 10).Value = Fn
+
+    i = i + 1
+    Loop While Cells(i, 9) <> ""
+
+' F(x)calculation
+
+Dim Soma As Double
+Dim Média As Double
+Dim Desvio As Double
+Dim X, Z As Double
+Dim Fx As Double
+
+    Soma = WorksheetFunction.Sum(Range("$I$6:$I$100"))
+    Desvio = WorksheetFunction.StDev(Range("$I$6:$I$100"))
+    
+    If Desvio = 0 Then
+        
+        Range("I6:Q100").Select
+        Selection.ClearContents
+        MsgBox ("Todos os valores são iguais! Não é possível realizar o teste estatístistico")
+        Cells(5, 2).Select
+        Exit Sub
+    Else
+    i = 6
+    Do
+    Média = (Soma / n)
+    X = Cells(i, 9).Value
+    Z = (X - Média) / (Desvio)
+
+    DistNormal = WorksheetFunction.Norm_S_Dist(Z, True)
+    Fx = DistNormal
+
+    Cells(i, 11).Value = Fx
+
+    i = i + 1
+    Loop While Cells(i, 9) <> ""
+End If
+'
+'D+ e D-calculation :
+
+Dim Dplus As Double
+
+    i = 6
+
+    Do
+    Fn = Cells(i, 10).Value
+    Fx = Cells(i, 11).Value
+
+    Dplus = Abs(Fx - Fn)
+    Cells(i, 12).Value = Dplus
+    
+    i = i + 1
+
+    Loop While Cells(i, 9) <> ""
+    
+Dim Dminus As Double
+
+    i = 6
+  
+    Do
+
+        If i = 6 Then
+    Cells(i, 13).Value = Abs(Cells(i, 11).Value - 0)
+    
+        ElseIf i > 6 Then
+      Cells(i, 13).Value = Abs(Cells(i, 11).Value - Cells(i - 1, 10).Value)
+      
+        End If
+
+    i = i + 1
+    Loop While Cells(i, 9) <> ""
+
+'Determination of Dn=Máx(D+,D-)
+
+Dim Dplusmáximo As Double
+Dim Dminusmáximo As Double
+Dim Dn As Double
+
+Dplusmáximo = WorksheetFunction.Max(Range("$L$6:$L$100"))
+Dminusmáximo = WorksheetFunction.Max(Range("$M$6:$M$100"))
+
+Dn = WorksheetFunction.Max(Dplusmáximo, Dminusmáximo)
+Dn = Format(Dn, "0.00000")
+Cells(6, 14).Value = Dn
+
+
+'Dcrit value
+
+Dim Dcrit As Double
+Dim pvalue As Double
+
+'Para alfa =0,01
+If Sheets("KolmogorovSmirnov").OptionButton1 = True Then
+
+    If n = 4 Then
+    Dcrit = 0.417
+    
+    ElseIf n = 5 Then
+    Dcrit = 0.405
+    
+    ElseIf n = 6 Then
+    Dcrit = 0.364
+    
+    ElseIf n = 7 Then
+    Dcrit = 0.348
+  
+    ElseIf n = 8 Then
+    Dcrit = 0.331
+    
+    ElseIf n = 9 Then
+    Dcrit = 0.311
+    
+    ElseIf n = 10 Then
+    Dcrit = 0.294
+    
+    ElseIf n = 11 Then
+    Dcrit = 0.284
+    
+    ElseIf n = 12 Then
+    Dcrit = 0.275
+    
+    ElseIf n = 13 Then
+    Dcrit = 0.268
+    
+    ElseIf n = 14 Then
+    Dcrit = 0.261
+    
+    ElseIf n = 15 Then
+    Dcrit = 0.257
+    
+    ElseIf n = 16 Then
+    Dcrit = 0.25
+    
+    ElseIf n = 17 Then
+    Dcrit = 0.245
+    
+    ElseIf n = 18 Then
+    Dcrit = 0.239
+    
+    ElseIf n = 19 Then
+    Dcrit = 0.235
+    
+    ElseIf n = 20 Then
+    Dcrit = 0.231
+    
+    ElseIf n = 25 Then
+    Dcrit = 0.2
+    
+    ElseIf n = 30 Then
+    Dcrit = 0.187
+    
+    Else
+    Dcrit = 1.031 / Sqr(n)
+    
+    End If
+
+ 'Para alfa =0,05
+ ElseIf Sheets("KolmogorovSmirnov").OptionButton2 = True Then
+    
+    If n = 4 Then
+    Dcrit = 0.381
+    
+    ElseIf n = 5 Then
+    Dcrit = 0.337
+    
+    ElseIf n = 6 Then
+    Dcrit = 0.319
+    
+    ElseIf n = 7 Then
+    Dcrit = 0.3
+  
+    ElseIf n = 8 Then
+    Dcrit = 0.285
+    
+    ElseIf n = 9 Then
+    Dcrit = 0.271
+    
+    ElseIf n = 10 Then
+    Dcrit = 0.258
+    
+    ElseIf n = 11 Then
+    Dcrit = 0.249
+    
+    ElseIf n = 12 Then
+    Dcrit = 0.242
+    
+    ElseIf n = 13 Then
+    Dcrit = 0.234
+    
+    ElseIf n = 14 Then
+    Dcrit = 0.227
+    
+    ElseIf n = 15 Then
+    Dcrit = 0.22
+    
+    ElseIf n = 16 Then
+    Dcrit = 0.213
+    
+    ElseIf n = 17 Then
+    Dcrit = 0.206
+    
+    ElseIf n = 18 Then
+    Dcrit = 0.2
+    
+    ElseIf n = 19 Then
+    Dcrit = 0.195
+    
+    ElseIf n = 20 Then
+    Dcrit = 0.19
+    
+    ElseIf n = 25 Then
+    Dcrit = 0.173
+    
+    ElseIf n = 30 Then
+    Dcrit = 0.161
+    
+    Else
+    Dcrit = 0.886 / Sqr(n)
+    
+    End If
+
+  'Para alfa =0,10
+ ElseIf Sheets("KolmogorovSmirnov").OptionButton3 = True Then
+   If n = 4 Then
+    Dcrit = 0.352
+    
+    ElseIf n = 5 Then
+    Dcrit = 0.315
+    
+    ElseIf n = 6 Then
+    Dcrit = 0.294
+    
+    ElseIf n = 7 Then
+    Dcrit = 0.276
+  
+    ElseIf n = 8 Then
+    Dcrit = 0.261
+    
+    ElseIf n = 9 Then
+    Dcrit = 0.249
+    
+    ElseIf n = 10 Then
+    Dcrit = 0.239
+    
+    ElseIf n = 11 Then
+    Dcrit = 0.23
+    
+    ElseIf n = 12 Then
+    Dcrit = 0.223
+    
+    ElseIf n = 13 Then
+    Dcrit = 0.214
+    
+    ElseIf n = 14 Then
+    Dcrit = 0.207
+    
+    ElseIf n = 15 Then
+    Dcrit = 0.201
+    
+    ElseIf n = 16 Then
+    Dcrit = 0.195
+    
+    ElseIf n = 17 Then
+    Dcrit = 0.189
+    
+    ElseIf n = 18 Then
+    Dcrit = 0.184
+    
+    ElseIf n = 19 Then
+    Dcrit = 0.179
+    
+    ElseIf n = 20 Then
+    Dcrit = 0.174
+    
+    ElseIf n = 25 Then
+    Dcrit = 0.158
+    
+    ElseIf n = 30 Then
+    Dcrit = 0.144
+    
+    Else
+    Dcrit = 0.805 / Sqr(n)
+    
+    End If
+ 
+
+ Else
+ MsgBox "Selecione o nível de significância"
+ End If
+ 
+Dcrit = Format(Dcrit, "0.0000")
+Cells(6, 15).Value = Dcrit
+
+ 
+'pvalue
+Dim Dmodif As Double
+Dim A, B, C, E, F, G As Double
+
+Dmodif = Dn * (Sqr(n) - 0.01 + (0.85 / Sqr(n)))
+
+If Dn < 0.1 Then
+
+A = -7.01256
+B = 2.99587
+C = -0.122119
+G = (n + 2.78019)
+E = 0.974598
+F = 1.67997
+
+pvalue = (1 - (Exp(A * G * ((Dn) ^ 2) + B * ((G) ^ (1 / 2) * Dn) + C + (E / ((n) ^ (1 / 2))) + (F / n)) / 100))
+
+Else
+  
+    If Dmodif < 0.47 Then
+        pvalue = (1 - (Exp(A * G * ((Dn) ^ 2) + B * ((G) ^ (1 / 2) * Dn) + C + (E / ((n) ^ (1 / 2))) + (F / n)) / 100))
+        
+    ElseIf Dmodif < 1.035 And Dmodif > 0.47 Then
+        pvalue = (-3.1909 * ((Dmodif) ^ 3)) + (10.874 * ((Dmodif) ^ 2)) - (12.361 * Dmodif) + 4.6913
+    
+    ElseIf Dmodif > 1.035 Then
+        pvalue = 379523 * Exp(-17.82 * Dmodif)
+      
+    End If
+End If
+
+Sheets("KolmogorovSmirnov").TB_EstatisticaKS.Value = Dn
+
+If pvalue < 0.01 Then
+    Sheets("KolmogorovSmirnov").TB_pvalue.Value = "< 0.01"
+ElseIf pvalue > 0.2 Then
+    Sheets("KolmogorovSmirnov").TB_pvalue.Value = "> 0.20"
+Else
+    Sheets("KolmogorovSmirnov").TB_pvalue.Value = pvalue
+End If
+
+If Cells(2, 2).Value = "Normality Test" Then
+    If Dn < Dcrit Then
+    Sheets("KolmogorovSmirnov").TB_Conclusao.Value = "NORMAL"
+    Else
+    Sheets("KolmogorovSmirnov").TB_Conclusao.Value = "Non-NORMAL"
+    End If
+    Cells(6, 15).Select
+ElseIf Cells(2, 2).Value = "Teste de Normalidade" Then
+    If Dn < Dcrit Then
+    Sheets("KolmogorovSmirnov").TB_Conclusao.Value = "NORMAL"
+    Else
+    Sheets("KolmogorovSmirnov").TB_Conclusao.Value = "NÃO-NORMAL"
+    End If
+    Cells(6, 15).Select
+End If
+
+End Sub
