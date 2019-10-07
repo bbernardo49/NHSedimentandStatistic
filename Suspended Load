@@ -1,0 +1,69 @@
+Sub DescargaSolidaSuspensao()
+
+Dim q, Css As Integer
+Dim contador As Integer
+Dim Celula As Range
+Dim i As Long
+i = 6
+Do
+q = Cells(i, 3).Value
+Css = Cells(i, 4).Value
+
+For Each Celula In Range("$B$6:$D$36")
+If (Not IsEmpty(Celula) And Celula.Value <= 0) Then
+            contador = contador + 1
+            Celula.Interior.ColorIndex = 3
+        Else
+            Celula.Interior.ColorIndex = 6
+        End If
+    Next Celula
+    
+    If (contador > 0) Then
+        MsgBox "Por favor, verifique os valores em vermelho...", vbOKOnly
+        
+    Else
+Qss = 0.0864 * q * Css
+Cells(i, 5).Value = Qss
+End If
+i = i + 1
+Loop While Cells(i, 4) <> ""
+End Sub
+
+Sub LimparCampoQss()
+'Clear contentes of Sheet 2 ("Qss")
+Range("B6:E100").Select
+Selection.ClearContents
+End Sub
+
+Sub VoltarFrmSedimentTool()
+With Planilha1
+.Visible = xlSheetVisible
+End With
+With Planilha2
+.Visible = xlSheetVeryHidden
+End With
+Frm_SedimentTool.Show
+End Sub
+
+Sub DescargaSolidaSuspensao_Soma()
+Sheets("Qss").Activate
+i = 6
+Do
+Soma = Soma + Sheets("Qss").Cells(i, 5).Value
+i = i + 1
+Loop While Cells(i, 5) <> ""
+Planilha2.TB_QssSoma.Value = Soma
+End Sub
+
+Sub DescargaSolidaSuspensao_Media()
+Dim Media As Double
+Sheets("Qss").Activate
+i = 6
+Do
+Soma = Soma + Sheets("Qss").Cells(i, 5).Value
+i = i + 1
+Media = (Soma / (i - 6))
+Loop While Cells(i, 5) <> ""
+Planilha2.TB_QssMedia.Value = Media
+
+End Sub
