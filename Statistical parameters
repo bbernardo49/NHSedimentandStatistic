@@ -1,0 +1,129 @@
+Sub LimparCampo()
+'
+'
+    Range("B6:SF105").Select
+    Selection.ClearContents
+    
+End Sub
+
+Private Sub VoltarFrm_EstatisticTool()
+
+With Planilha1
+.Visible = xlSheetVisible
+End With
+With Planilha5
+.Visible = xlSheetVeryHidden
+End With
+Frm_EstatisticTool.Show
+Cells(6, 3).Select
+
+End Sub
+
+Sub LimparcampoParâmetrosEstatisticos()
+
+'
+    Range("C6:D105").Select
+    Selection.ClearContents
+    
+End Sub
+
+Sub ParâmetrosEstatisticos()
+
+With Range("SF6:SF105").Select
+Selection.ClearContents
+Cells(1, 1).Select
+End With
+
+Dim cont As Long
+Dim n As Long
+
+    cont = WorksheetFunction.CountA(Range("$C$6:$C$105"))
+    n = cont
+    
+    If n < 2 Then
+    
+    MsgBox "A minimum of 2 data pairs is recommended for comparison"
+    Exit Sub
+    
+    Else
+    End If
+
+Dim Oi As Double
+Dim Pi As Double
+Dim MO As Double
+Dim SomaO As Double
+Dim CD, EF, CRM, EM, Dm As Double
+Dim i As Long
+Dim A, B, C, D, E, F, G  As Double
+Dim SomaA, SomaB, SomaC, SomaD, SomaE As Double
+
+Sheets("ParâmetrosEstatisticos").Activate
+
+    SomaO = WorksheetFunction.Sum(Range("$C$6:$C$105"))
+
+
+i = 6
+SomaA = 0
+SomaB = 0
+SomaC = 0
+SomaD = 0
+SomaE = 0
+SomaG = 0
+
+
+Do
+Oi = Cells(i, 3).Value
+Pi = Cells(i, 4).Value
+
+MO = (SomaO / n)
+A = ((Oi - MO) ^ 2)
+B = ((Pi - MO) ^ 2)
+C = Oi
+D = Pi
+E = (Oi - Pi)
+F = (Abs(Oi - Pi))
+G = (Oi - Pi) ^ 2
+Cells(i, 500).Value = F
+
+
+SomaA = SomaA + A
+SomaB = SomaB + B
+SomaC = SomaC + C
+SomaD = SomaD + D
+SomaE = SomaE + E
+SomaF = SomaF + F
+SomaG = SomaG + G
+
+
+If SomaB = 0 Then
+MsgBox "Error! Check your data"
+Exit Sub
+Else
+
+CD = SomaA / SomaB
+EF = (SomaA - SomaG) / (SomaA)
+CRM = (SomaC - SomaD) / (SomaC)
+Dm = SomaF / n
+EM = WorksheetFunction.Max(Range("$SF$6:$SF$105"))
+RMSD = Sqr((SomaG) / n)
+
+End If
+
+i = i + 1
+
+
+Loop While Cells(i, 3) <> ""
+
+Frm_ResultadosParâmetros.TB_ParâmetroCD.Value = CD
+Frm_ResultadosParâmetros.TB_ParâmetroEF.Value = EF
+Frm_ResultadosParâmetros.TB_ParâmetroCRM.Value = CRM
+Frm_ResultadosParâmetros.TB_ParâmetroEM.Value = EM
+Frm_ResultadosParâmetros.TB_ParâmetroDM.Value = Dm
+Frm_ResultadosParâmetros.TB_ParâmetroRMSD.Value = RMSD
+Cells(6, 7).Select
+
+Frm_ResultadosParâmetros.Show
+
+
+End Sub
+
