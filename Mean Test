@@ -1,0 +1,745 @@
+Sub TesteT()
+
+With Range("SF6:SF105").Select
+    Selection.ClearContents
+    Cells(6, 3).Select
+End With
+
+Dim cont1, cont2 As Long
+Dim n1, n2, nd As Long
+Dim GL As Double
+Dim Soma1, Soma2, SomaD As Double
+Dim Média1, Média2, MédiaD As Double
+Dim Desvio1, Desvio2, DesvioI, DesvioD As Double
+Dim tcalc As Double
+Dim tcrit As Double
+Dim x1 As Double
+Dim x2 As Double
+Dim di As Double
+Dim pvalue As Double
+Dim Alfa As Double
+Dim i As Long
+
+    cont1 = WorksheetFunction.CountA(Range("$C$6:$C$105"))
+    cont2 = WorksheetFunction.CountA(Range("$E$6:$E$105"))
+    n1 = cont1
+    n2 = cont2
+    Médiapopulacional = Planilha7.TB_HipoteseNula.Value
+
+If Sheets("Ttest").OP_AmostraUnica = True Then
+
+    If n1 < 4 Then
+        MsgBox "For Student's t test, at least 4 values are recommended"
+        Exit Sub
+        Else
+    End If
+    
+Soma1 = WorksheetFunction.Sum(Range("$C$6:$C$105"))
+Média1 = (Soma1) / n1
+Desvio1 = WorksheetFunction.StDev(Range("$C$6:$C$105"))
+
+ElseIf Sheets("Ttest").OP_AmostraIndepVI = True Or Sheets("Ttest").OP_AmostraIndepVD = True Or Sheets("Ttest").OP_Pareado = True Then
+
+    If n1 < 4 Or n2 < 4 Then
+        MsgBox "For Student's t test, at least 4 values are recommended."
+        Exit Sub
+        Else
+    End If
+    
+Soma1 = WorksheetFunction.Sum(Range("$C$6:$C$105"))
+Média1 = (Soma1) / n1
+Desvio1 = WorksheetFunction.StDev(Range("$C$6:$C$105"))
+Soma2 = WorksheetFunction.Sum(Range("$E$6:$E$105"))
+Média2 = (Soma2) / n2
+Desvio2 = WorksheetFunction.StDev(Range("$E$6:$E$105"))
+DesvioI = Sqr((((n1 - 1) * ((Desvio1) ^ 2)) + ((n2 - 1) * ((Desvio2) ^ 2))) / (n1 + n2 - 2))
+
+End If
+
+'---------------t-test one sample
+If Sheets("Ttest").OP_AmostraUnica = True Then
+    GL = n1 - 1 'degrees of freedom calculation
+    
+    If Planilha7.TB_HipoteseNula.Value = "" Then
+    MsgBox ("Plese, the method requires a typed Null hypothesis value")
+    Exit Sub
+    Else
+    tcalc = (Média1 - Médiapopulacional) / ((Desvio1 / Sqr(n1)))
+    End If
+    
+    If Sheets("Ttest").OP_Alfa95 = True Then
+            Alfa = 0.05
+            If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), n1 - 1)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), n1 - 1)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, n1 - 1)      'Upper tailed
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, n1 - 1)      'Lower tailed
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+        
+            End If
+   
+    ElseIf Sheets("Ttest").OP_Alfa99 = True Then
+            Alfa = 0.01
+            If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), n1 - 1)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), n1 - 1)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, n1 - 1)      'Upper tailed
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, n1 - 1)      ''Lower tailed
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+        
+            End If
+    
+    ElseIf Sheets("Ttest").OP_Alfa90 = True Then
+            Alfa = 0.1
+            If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), n1 - 1)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), n1 - 1)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, n1 - 1)
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+    
+            End If
+    End If
+     
+    Frm_ResultadosTesteT.AM_TB_Média1.Value = Média1
+    Frm_ResultadosTesteT.AM_TB_Desvio1.Value = Desvio1
+    Frm_ResultadosTesteT.AM_TB_n1.Value = n1
+    Frm_ResultadosTesteT.AM_TB_GL.Value = GL
+    Frm_ResultadosTesteT.AM_TB_Alfa.Value = Alfa
+    Frm_ResultadosTesteT.AM_TB_tcalc.Value = tcalc
+    Frm_ResultadosTesteT.AM_TB_pvalue.Value = pvalue
+        
+        
+ If Cells(2, 43).Value = "Teste de Comparação das Médias" Then
+        
+        If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.AM_TB_Ho.Value = "Eqqual to " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AM_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Or tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null hyphotesis rejected"
+                Else
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null hyphotesis accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.AM_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.AM_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Then
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null hyphotesis rejected"
+                Else
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null hyphotesis accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.AM_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AM_TB_tcritpositivo.Value = "N/A"
+            
+               If tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null hyphotesis rejected"
+                Else
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null hyphotesis accepted"
+            End If
+            
+        End If
+        
+ ElseIf Cells(2, 43).Value = "Mean Comparison test" Then
+        
+        If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.AM_TB_Ho.Value = "Equal to " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AM_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Or tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.AM_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.AM_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Then
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.AM_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.AM_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AM_TB_tcritpositivo.Value = "N/A"
+            
+               If tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AM_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+        End If
+                
+ End If
+        
+        
+    Frm_ResultadosTesteT.MultiPage1.Pages(0).Visible = True
+    Frm_ResultadosTesteT.MultiPage1.Pages(1).Visible = False
+    Frm_ResultadosTesteT.MultiPage1.Pages(2).Visible = False
+           
+    Frm_ResultadosTesteT.Show
+
+'--------------t-test for independent samples and equal variance
+ElseIf Sheets("Ttest").OP_AmostraIndepVI = True Then
+    GL = n1 + n2 - 2
+    tcalc = (Média1 - Média2) / (Sqr((((DesvioI) ^ 2)) * ((1 / n1) + (1 / n2))))
+    
+    If Sheets("Ttest").OP_Alfa95 = True Then
+            Alfa = 0.05
+           If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Upper tailed
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Lower tailed
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+            End If
+   
+    ElseIf Sheets("Ttest").OP_Alfa99 = True Then
+            Alfa = 0.01
+            If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+            End If
+    
+    ElseIf Sheets("Ttest").OP_Alfa90 = True Then
+            Alfa = 0.1
+             If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+            End If
+
+    End If
+    
+    Frm_ResultadosTesteT.AI_TB_Média1.Value = Média1
+    Frm_ResultadosTesteT.AI_TB_Média2.Value = Média2
+    Frm_ResultadosTesteT.AI_TB_Desvio1.Value = Desvio1
+    Frm_ResultadosTesteT.AI_TB_Desvio2.Value = Desvio2
+    Frm_ResultadosTesteT.AI_TB_n1.Value = n1
+    Frm_ResultadosTesteT.AI_TB_n2.Value = n2
+    Frm_ResultadosTesteT.AI_TB_GL.Value = GL
+    Frm_ResultadosTesteT.AI_TB_Alfa.Value = Alfa
+    Frm_ResultadosTesteT.AI_TB_tcalc.Value = tcalc
+    Frm_ResultadosTesteT.AI_TB_pvalue.Value = pvalue
+        
+If Cells(2, 43).Value = "Teste de Comparação de Médias" Then
+ 
+        If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "Eqqual to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcrit Or tcalc < -tcrit Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+         
+            If tcalc > tcrit Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = "N/A"
+            
+               If tcalc < -tcrit Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+            
+        End If
+        
+ ElseIf Cells(2, 43).Value = "Mean Comparison test" Then
+ 
+         If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "Equal to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcrit Or tcalc < -tcrit Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+         
+            If tcalc > tcrit Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = "N/A"
+            
+               If tcalc < -tcrit Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+        End If
+
+ End If
+ 
+    Frm_ResultadosTesteT.MultiPage1.Pages(0).Visible = False
+    Frm_ResultadosTesteT.MultiPage1.Pages(1).Visible = True
+    Frm_ResultadosTesteT.MultiPage1.Pages(2).Visible = False
+    
+    Frm_ResultadosTesteT.Show
+    
+    
+'---------paired t-test:
+ElseIf Sheets("Ttest").OP_Pareado = True Then
+
+    If Planilha7.TB_HipoteseNula.Value <> 0 Then
+        MsgBox ("In the paired T test, non-zero values are not allowed for null hypothesis.")
+        
+        Else
+        i = 6
+      
+        Do
+            x1 = Cells(i, 3).Value
+            x2 = Cells(i, 5).Value
+            di = x1 - x2
+            Cells(i, 500).Value = di
+        
+            i = i + 1
+        Loop While Cells(i, 3) <> ""
+  
+        SomaD = WorksheetFunction.Sum(Range("$SF$6:$SF$105"))
+        MédiaD = SomaD / n1
+        DesvioD = WorksheetFunction.StDev(Range("$SF$6:$SF$105"))
+              
+ If DesvioD = 0 Then
+  MsgBox ("Warning! It was not possible to calculate T-value. Check standard deviation of the differences")
+  Exit Sub
+ Else
+        tcalc = ((MédiaD) / (DesvioD / Sqr((n1))))
+ End If
+        GL = n1 - 1
+        
+            If Sheets("Ttest").OP_Alfa95 = True Then
+            Alfa = 0.05
+             If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à direita
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à esquerda
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+        
+                End If
+   
+            ElseIf Sheets("Ttest").OP_Alfa99 = True Then
+            Alfa = 0.01
+               If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à direita
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à esquerda
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+    
+                End If
+    
+             ElseIf Sheets("Ttest").OP_Alfa90 = True Then
+             Alfa = 0.1
+               If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à direita
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à esquerda
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+                End If
+
+            End If
+    End If
+      
+    Frm_ResultadosTesteT.PAR_TB_MédiaD.Value = MédiaD
+    Frm_ResultadosTesteT.PAR_TB_DesvioD.Value = DesvioD
+    Frm_ResultadosTesteT.PAR_TB_n1.Value = n1
+    Frm_ResultadosTesteT.PAR_TB_GL.Value = GL
+    Frm_ResultadosTesteT.PAR_TB_Alfa.Value = Alfa
+    Frm_ResultadosTesteT.PAR_TB_tcalc.Value = tcalc
+    Frm_ResultadosTesteT.PAR_TB_pvalue.Value = pvalue
+        
+If Cells(2, 43).Value = "Teste de Comparação das Médias" Then
+        
+        If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.PAR_TB_Ho.Value = "Eqqual to " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.PAR_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Or tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.PAR_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.PAR_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcrit Then
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.PAR_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.PAR_TB_tcritpositivo.Value = "N/A"
+            
+               If tcalc < -tcrit Then
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null hypothesis accepted"
+                End If
+            
+            End If
+        
+ElseIf Cells(2, 43).Value = "Mean Comparison test" Then
+
+        If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.PAR_TB_Ho.Value = "Equal to " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.PAR_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Or tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.PAR_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.PAR_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcrit Then
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+            ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.PAR_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.PAR_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.PAR_TB_tcritpositivo.Value = "N/A"
+            
+               If tcalc < -tcrit Then
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.PAR_TB_Conclusao.Value = "Null Hypothesis Accepted"
+                End If
+            
+            End If
+End If
+        
+    Frm_ResultadosTesteT.MultiPage1.Pages(0).Visible = False
+    Frm_ResultadosTesteT.MultiPage1.Pages(1).Visible = False
+    Frm_ResultadosTesteT.MultiPage1.Pages(2).Visible = True
+    
+    Frm_ResultadosTesteT.Show
+            
+  
+'------------t-test for independent samples and different variances
+ElseIf Sheets("Ttest").OP_AmostraIndepVD = True Then
+    
+    B = ((((Desvio2) ^ 2) / n2) ^ 2) / (n2 - 1)
+    A = ((((Desvio1) ^ 2) / n1) ^ 2) / (n1 - 1)
+    
+    GL = ((((((Desvio1) ^ 2) / n1) + ((Desvio2) ^ 2) / n2)) ^ 2) / ((((((Desvio1) ^ 2) / n1) ^ 2) / (n1 - 1)) + ((((Desvio2) ^ 2) / n2) ^ 2) / (n2 - 1))
+    tcalc = (Média1 - Média2) / Sqr(((((Desvio1) ^ 2) / n1) + (((Desvio2) ^ 2) / n2)))
+    
+    If Sheets("Ttest").OP_Alfa95 = True Then
+            Alfa = 0.05
+                If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Upper tailed
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Lower tailed
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+            End If
+   
+    ElseIf Sheets("Ttest").OP_Alfa99 = True Then
+            Alfa = 0.01
+                If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à direita
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à esquerda
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+            End If
+    
+    ElseIf Sheets("Ttest").OP_Alfa90 = True Then
+            Alfa = 0.1
+                If Sheets("Ttest").OP_MédiasDiferentes = True Then
+                tcritpositivo = WorksheetFunction.T_Inv_2T((Alfa), GL)
+                tcritnegativo = -WorksheetFunction.T_Inv_2T((Alfa), GL)
+                pvalue = WorksheetFunction.T_Dist_2T(Abs(tcalc), GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à direita
+                pvalue = WorksheetFunction.T_Dist_RT(tcalc, GL)
+    
+                ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+                tcritnegativo = WorksheetFunction.T_Inv(Alfa, GL)
+                tcritpositivo = -WorksheetFunction.T_Inv(Alfa, GL)      'Unilateral à esquerda
+                pvalue = WorksheetFunction.T_Dist_RT((-tcalc), GL)
+            End If
+
+    End If
+    
+    Frm_ResultadosTesteT.AI_TB_Média1.Value = Média1
+    Frm_ResultadosTesteT.AI_TB_Média2.Value = Média2
+    Frm_ResultadosTesteT.AI_TB_Desvio1.Value = Desvio1
+    Frm_ResultadosTesteT.AI_TB_Desvio2.Value = Desvio2
+    Frm_ResultadosTesteT.AI_TB_n1.Value = n1
+    Frm_ResultadosTesteT.AI_TB_n2.Value = n2
+    Frm_ResultadosTesteT.AI_TB_GL.Value = GL
+    Frm_ResultadosTesteT.AI_TB_Alfa.Value = Alfa
+    Frm_ResultadosTesteT.AI_TB_tcalc.Value = tcalc
+    Frm_ResultadosTesteT.AI_TB_pvalue.Value = pvalue
+        
+If Cells(2, 43).Value = "Teste de Comparação das Médias" Then
+        
+        If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "Eqqual to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritnegativo Or tcalc < tcritpositivo Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis rejected"
+            End If
+            
+        ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis accepted"
+            End If
+            
+        ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = "N/A"
+            
+            If tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis accepted"
+            End If
+            
+        End If
+        
+ ElseIf Cells(2, 43).Value = "Mean Comparison test" Then
+ 
+         If Sheets("Ttest").OP_MédiasDiferentes = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "Equal to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "Different to " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritnegativo Or tcalc < tcritpositivo Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+        ElseIf Sheets("Ttest").OP_MédiaMaior = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = "<= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "> " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = "N/A"
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = tcritpositivo
+            
+            If tcalc > tcritpositivo Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+        ElseIf Sheets("Ttest").OP_MédiaMenor = True Then
+            Frm_ResultadosTesteT.AI_TB_Ho.Value = ">= " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_Ha.Value = "< " + Médiapopulacional
+            Frm_ResultadosTesteT.AI_TB_tcritnegativo.Value = tcritnegativo
+            Frm_ResultadosTesteT.AI_TB_tcritpositivo.Value = "N/A"
+            
+            If tcalc < tcritnegativo Then
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Rejected"
+                Else
+                Frm_ResultadosTesteT.AI_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+        End If
+ End If
+     
+    Frm_ResultadosTesteT.MultiPage1.Pages(0).Visible = False
+    Frm_ResultadosTesteT.MultiPage1.Pages(1).Visible = True
+    Frm_ResultadosTesteT.MultiPage1.Pages(2).Visible = False
+    Frm_ResultadosTesteT.Show
+      
+End If
+
+End Sub
+Sub Voltar_Frm_EstatisticaBasica()
+
+Sheets("Ttest").Activate
+Planilha1.Visible = xlSheetVisible
+Planilha7.Visible = xlSheetHidden
+Frm_EstatisticaBasica.Show
+
+End Sub
+
