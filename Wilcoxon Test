@@ -1,0 +1,1313 @@
+Sub TesteT()
+
+Sub TesteWilcoxon()
+
+   With Range("AB6:AT105").Select
+    Selection.ClearContents
+    Cells(6, 3).Select
+    End With
+
+Dim cont1, cont2 As Long
+Dim n1, n2, nd As Long
+Dim Médiapopulacional As Double
+Dim i As Long
+Dim x1, x2, di As Double
+
+
+    If Planilha11.TW_TB_HipóteseNula.Value = "" Then
+        MsgBox ("Null hypothesis value required")
+        Exit Sub
+    Else
+        Médiapopulacional = Planilha11.TW_TB_HipóteseNula.Value
+        Planilha11.TW_TB_HipóteseNula.Value = Médiapopulacional
+    End If
+
+        cont1 = WorksheetFunction.CountA(Range("$C$6:$C$105"))
+        cont2 = WorksheetFunction.CountA(Range("$E$6:$E$105"))
+        n1 = cont1
+        n2 = cont2
+    
+'-------------- One sample test
+If Sheets("WilcoxonTest").TW_OP_Amostraúnica = True Then
+        
+    If n1 = 0 And n2 > 0 Then
+        MsgBox "Enter the data in Column 1 to perform the Wilcoxon One-Sample test."
+        Exit Sub
+        Else
+    End If
+    
+    If n1 < 4 Then
+        MsgBox "For the Wilcoxon Test, a minimum of 4 values is recommended."
+        Exit Sub
+    Else
+
+'Copiar os dados de n1 e colar ordenados na coluna AC
+            Range("C6:C105").Select
+            Selection.Copy
+            Range("AC6").Select
+            Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+                :=False, Transpose:=False
+            Application.CutCopyMode = False
+             ActiveWorkbook.Worksheets("WilcoxonTest").Sort.SortFields.Clear
+            ActiveWorkbook.Worksheets("WilcoxonTest").Sort.SortFields.Add2 Key:=Range( _
+            "AC6"), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+            xlSortNormal
+            With ActiveWorkbook.Worksheets("WilcoxonTest").Sort
+            .SetRange Range("AC6:AC105")
+            .Header = xlNo
+            .MatchCase = False
+            .Orientation = xlTopToBottom
+            .SortMethod = xlPinYin
+            .Apply
+            End With
+
+Dim Zi As Double
+Dim Xi As Double
+Dim AbsZi As Double
+Dim Zordenado As Double
+
+i = 6
+Do
+Xi = Cells(i, 29).Value
+
+Zi = Xi - Médiapopulacional
+Cells(i, 30).Value = Zi
+
+Range("AD6:AD105").Select
+Selection.Copy
+Range("AE6").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+
+
+AbsZi = Abs(Zi)
+Cells(i, 32).Value = AbsZi
+
+i = i + 1
+Loop While Cells(i, 29) <> ""
+
+    End If
+
+'-------Wilcoxon test: Independent samples
+ElseIf Sheets("WilcoxonTest").TW_OP_Amostrasindep = True Then
+    MsgBox ("Wilcoxon Test for 'Independent Samples' in Development")
+    Exit Sub
+      
+'--------Wilcoxon test: Paired
+ElseIf Sheets("WilcoxonTest").TW_OP_Pareado = True Then
+
+ If n1 < 4 Or n2 < 4 Or n1 <> n2 Then
+        MsgBox "For the Paired Wilcoxon test, a minimum of 4 values is recommended in both columns, and n1 must be equal to n2."
+        Exit Sub
+        Else
+                      
+i = 6
+      
+Do
+x1 = Cells(i, 3).Value
+x2 = Cells(i, 5).Value
+
+Cells(i, 28).Value = Cells(i, 3).Value - Cells(i, 5).Value         'Retorna di como a diferença entre os dados
+di = Cells(i, 28).Value
+
+'Duplica dados di, ignorando valores em branco e cola em Xi
+
+Range("AB6:AB105").Select
+Selection.Copy
+Range("AD6").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+
+Range("AD6:AD105").Select
+Selection.Copy
+Range("AE6").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+
+
+AbsZi = Abs(Cells(i, 31).Value)
+Cells(i, 32).Value = AbsZi
+
+i = i + 1
+Loop While Cells(i, 3) <> ""
+ 
+    End If
+End If
+
+'---From here the procedures are the same.
+  
+
+   Range("AE6:AF105").Select
+    ActiveWorkbook.Worksheets("WilcoxonTest").Sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("WilcoxonTest").Sort.SortFields.Add2 Key:=Range( _
+        "AF6:AF105"), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    With ActiveWorkbook.Worksheets("WilcoxonTest").Sort
+        .SetRange Range("AE6:AF105")
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    Range("AE6:AE105").Select
+    Selection.Copy
+    Range("AG6").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+
+'Duplica coluna |Zi|
+Range("AF6:AF105").Select
+Selection.Copy
+Range("AH6").Select
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+Application.CutCopyMode = False
+
+
+'Agora calcular o número de postos
+
+Dim Ri As Double
+Dim NumZero, NumTies As Double
+
+i = 6
+Do
+
+Ri = WorksheetFunction.Rank_Avg(Cells(i, 34).Value, Range("$AH$6:$AH$105"), 1)
+Cells(i, 35).Value = Ri
+
+
+i = i + 1
+Loop While Cells(i, 3) <> ""
+
+
+Dim Psi As Long
+Dim RiPsi As Double
+
+i = 6
+Do
+    If Cells(i, 33).Value > 0 Then
+        Psi = 1
+        Cells(i, 36).Value = Psi
+    Else
+        Psi = 0
+        Cells(i, 36).Value = Psi
+
+End If
+
+RiPsi = Cells(i, 35).Value * Cells(i, 36)
+Cells(i, 37).Value = RiPsi
+
+i = i + 1
+Loop While Cells(i, 3) <> ""
+
+
+'Cálculo da Estatística T e dos valores críticos Tinf e Tsup
+Dim T, Tinf, Tsup As Double
+Dim ET, VarT, A As Double
+Dim Alfa, Z, pvalue, Lowerpvalue, Upperpvalue As Double
+
+T = WorksheetFunction.Sum(Range("$AK$6:$AK$105"))
+Cells(6, 38).Value = T
+
+ET = n1 * (n1 + 1) / 4
+VarT = (n1 * (n1 + 1) * ((2 * n1) + 1)) / 24
+A = T - ET
+
+'-------------------------------------------------------Bilateral
+If Sheets("WilcoxonTest").TW_OP_MedDif = True Then
+    If Sheets("WilcoxonTest").TW_OP_Alfa95 = True Then
+        Alfa = 0.05
+        If n1 <= 50 Then
+        
+            If n1 = 4 Then
+            Tinf = 0
+            ElseIf n1 = 5 Then
+            Tinf = 0
+            ElseIf n1 = 6 Then
+            Tinf = 1
+            ElseIf n1 = 7 Then
+            Tinf = 3
+            ElseIf n1 = 8 Then
+            Tinf = 4
+            ElseIf n1 = 9 Then
+            Tinf = 6
+            ElseIf n1 = 10 Then
+            Tinf = 9
+            ElseIf n1 = 11 Then
+            Tinf = 11
+            ElseIf n1 = 12 Then
+            Tinf = 14
+            ElseIf n1 = 13 Then
+            Tinf = 18
+            ElseIf n1 = 14 Then
+            Tinf = 22
+            ElseIf n1 = 15 Then
+            Tinf = 26
+            ElseIf n = 16 Then
+            Tinf = 30
+            ElseIf n1 = 17 Then
+            Tinf = 35
+            ElseIf n1 = 18 Then
+            Tinf = 41
+            ElseIf n1 = 19 Then
+            Tinf = 47
+            ElseIf n1 = 20 Then
+            Tinf = 53
+            ElseIf n1 = 21 Then
+            Tinf = 59
+            ElseIf n1 = 22 Then
+            Tinf = 67
+            ElseIf n1 = 23 Then
+            Tinf = 74
+            ElseIf n1 = 24 Then
+            Tinf = 82
+            ElseIf n1 = 25 Then
+            Tinf = 90
+            ElseIf n1 = 26 Then
+            Tinf = 99
+            ElseIf n1 = 27 Then
+            Tinf = 108
+            ElseIf n1 = 28 Then
+            Tinf = 117
+            ElseIf n1 = 29 Then
+            Tinf = 127
+            ElseIf n1 = 30 Then
+            Tinf = 138
+            ElseIf n1 = 31 Then
+            Tinf = 148
+            ElseIf n1 = 32 Then
+            Tinf = 160
+            ElseIf n1 = 33 Then
+            Tinf = 171
+            ElseIf n1 = 34 Then
+            Tinf = 183
+            ElseIf n1 = 35 Then
+            Tinf = 196
+            ElseIf n1 = 36 Then
+            Tinf = 209
+            ElseIf n1 = 37 Then
+            Tinf = 222
+            ElseIf n1 = 38 Then
+            Tinf = 236
+            ElseIf n1 = 39 Then
+            Tinf = 250
+            ElseIf n1 = 40 Then
+            Tinf = 265
+            ElseIf n1 = 41 Then
+            Tinf = 280
+            ElseIf n1 = 42 Then
+            Tinf = 295
+            ElseIf n1 = 43 Then
+            Tinf = 311
+            ElseIf n1 = 44 Then
+            Tinf = 328
+            ElseIf n1 = 45 Then
+            Tinf = 344
+            ElseIf n1 = 46 Then
+            Tinf = 362
+            ElseIf n1 = 47 Then
+            Tinf = 379
+            ElseIf n1 = 48 Then
+            Tinf = 397
+            ElseIf n1 = 49 Then
+            Tinf = 416
+            ElseIf n1 = 50 Then
+            Tinf = 435
+            End If
+        Else
+            Tinf = ET + (WorksheetFunction.Norm_S_Inv(Alfa / 2) * Sqr(VarT))
+        End If
+    
+    ElseIf Sheets("WilcoxonTest").TW_OP_Alfa90 = True Then
+        Alfa = 0.1
+        If n1 <= 50 Then
+ 
+            If n1 = 4 Then
+            Tinf = 0
+            ElseIf n1 = 5 Then
+            Tinf = 1
+            ElseIf n1 = 6 Then
+            Tinf = 3
+            ElseIf n1 = 7 Then
+            Tinf = 4
+            ElseIf n1 = 8 Then
+            Tinf = 6
+            ElseIf n1 = 9 Then
+            Tinf = 9
+            ElseIf n1 = 10 Then
+            Tinf = 11
+            ElseIf n1 = 11 Then
+            Tinf = 14
+            ElseIf n1 = 12 Then
+            Tinf = 18
+            ElseIf n1 = 13 Then
+            Tinf = 22
+            ElseIf n1 = 14 Then
+            Tinf = 26
+            ElseIf n1 = 15 Then
+            Tinf = 31
+            ElseIf n = 16 Then
+            Tinf = 36
+            ElseIf n1 = 17 Then
+            Tinf = 42
+            ElseIf n1 = 18 Then
+            Tinf = 48
+            ElseIf n1 = 19 Then
+            Tinf = 54
+            ElseIf n1 = 20 Then
+            Tinf = 61
+            ElseIf n1 = 21 Then
+            Tinf = 68
+            ElseIf n1 = 22 Then
+            Tinf = 76
+            ElseIf n1 = 23 Then
+            Tinf = 84
+            ElseIf n1 = 24 Then
+            Tinf = 92
+            ElseIf n1 = 25 Then
+            Tinf = 101
+            ElseIf n1 = 26 Then
+            Tinf = 111
+            ElseIf n1 = 27 Then
+            Tinf = 120
+            ElseIf n1 = 28 Then
+            Tinf = 131
+            ElseIf n1 = 29 Then
+            Tinf = 141
+            ElseIf n1 = 30 Then
+            Tinf = 152
+            ElseIf n1 = 31 Then
+            Tinf = 164
+            ElseIf n1 = 32 Then
+            Tinf = 176
+            ElseIf n1 = 33 Then
+            Tinf = 188
+            ElseIf n1 = 34 Then
+            Tinf = 201
+            ElseIf n1 = 35 Then
+            Tinf = 214
+            ElseIf n1 = 36 Then
+            Tinf = 228
+            ElseIf n1 = 37 Then
+            Tinf = 242
+            ElseIf n1 = 38 Then
+            Tinf = 257
+            ElseIf n1 = 39 Then
+            Tinf = 272
+            ElseIf n1 = 40 Then
+            Tinf = 287
+            ElseIf n1 = 41 Then
+            Tinf = 303
+            ElseIf n1 = 42 Then
+            Tinf = 320
+            ElseIf n1 = 43 Then
+            Tinf = 337
+            ElseIf n1 = 44 Then
+            Tinf = 354
+            ElseIf n1 = 45 Then
+            Tinf = 372
+            ElseIf n1 = 46 Then
+            Tinf = 390
+            ElseIf n1 = 47 Then
+            Tinf = 408
+            ElseIf n1 = 48 Then
+            Tinf = 428
+            ElseIf n1 = 49 Then
+            Tinf = 447
+            ElseIf n1 = 50 Then
+            Tinf = 467
+            End If
+        Else
+            Tinf = ET + (WorksheetFunction.Norm_S_Inv(Alfa / 2) * Sqr(VarT))
+        End If
+        
+    ElseIf Sheets("WilcoxonTest").TW_OP_Alfa99 = True Then
+        Alfa = 0.01
+        If n1 <= 50 Then
+ 
+            If n1 = 4 Then
+            Tinf = 0
+            ElseIf n1 = 5 Then
+            Tinf = 0
+            ElseIf n1 = 6 Then
+            Tinf = 0
+            ElseIf n1 = 7 Then
+            Tinf = 0
+            ElseIf n1 = 8 Then
+            Tinf = 1
+            ElseIf n1 = 9 Then
+            Tinf = 2
+            ElseIf n1 = 10 Then
+            Tinf = 4
+            ElseIf n1 = 11 Then
+            Tinf = 6
+            ElseIf n1 = 12 Then
+            Tinf = 8
+            ElseIf n1 = 13 Then
+            Tinf = 10
+            ElseIf n1 = 14 Then
+            Tinf = 13
+            ElseIf n1 = 15 Then
+            Tinf = 16
+            ElseIf n = 16 Then
+            Tinf = 20
+            ElseIf n1 = 17 Then
+            Tinf = 24
+            ElseIf n1 = 18 Then
+            Tinf = 28
+            ElseIf n1 = 19 Then
+            Tinf = 33
+            ElseIf n1 = 20 Then
+            Tinf = 38
+            ElseIf n1 = 21 Then
+            Tinf = 44
+            ElseIf n1 = 22 Then
+            Tinf = 49
+            ElseIf n1 = 23 Then
+            Tinf = 55
+            ElseIf n1 = 24 Then
+            Tinf = 62
+            ElseIf n1 = 25 Then
+            Tinf = 69
+            ElseIf n1 = 26 Then
+            Tinf = 76
+            ElseIf n1 = 27 Then
+            Tinf = 84
+            ElseIf n1 = 28 Then
+            Tinf = 92
+            ElseIf n1 = 29 Then
+            Tinf = 101
+            ElseIf n1 = 30 Then
+            Tinf = 110
+            ElseIf n1 = 31 Then
+            Tinf = 119
+            ElseIf n1 = 32 Then
+            Tinf = 129
+            ElseIf n1 = 33 Then
+            Tinf = 139
+            ElseIf n1 = 34 Then
+            Tinf = 149
+            ElseIf n1 = 35 Then
+            Tinf = 160
+            ElseIf n1 = 36 Then
+            Tinf = 172
+            ElseIf n1 = 37 Then
+            Tinf = 184
+            ElseIf n1 = 38 Then
+            Tinf = 196
+            ElseIf n1 = 39 Then
+            Tinf = 208
+            ElseIf n1 = 40 Then
+            Tinf = 221
+            ElseIf n1 = 41 Then
+            Tinf = 235
+            ElseIf n1 = 42 Then
+            Tinf = 248
+            ElseIf n1 = 43 Then
+            Tinf = 263
+            ElseIf n1 = 44 Then
+            Tinf = 277
+            ElseIf n1 = 45 Then
+            Tinf = 292
+            ElseIf n1 = 46 Then
+            Tinf = 308
+            ElseIf n1 = 47 Then
+            Tinf = 324
+            ElseIf n1 = 48 Then
+            Tinf = 340
+            ElseIf n1 = 49 Then
+            Tinf = 357
+            ElseIf n1 = 50 Then
+            Tinf = 374
+            End If
+        Else
+            Tinf = ET + (WorksheetFunction.Norm_S_Inv(Alfa / 2) * Sqr(VarT))
+        End If
+    End If
+    
+Tsup = (n1 * (n1 + 1) / 2) - Tinf
+Cells(6, 39).Value = Tinf
+Cells(6, 40).Value = Tsup
+              
+'-----------------------Upper tailed (Direita-Maior) or Lower tailed (Esquerda-Menor)
+ElseIf Sheets("WilcoxonTest").TW_OP_MedMaior = True Or Sheets("WilcoxonTest").TW_OP_MedMenor = True Then
+
+ If Sheets("WilcoxonTest").TW_OP_Alfa95 = True Then
+        Alfa = 0.05
+        If n1 <= 50 Then
+        
+           If n1 = 4 Then
+            Tinf = 0
+            ElseIf n1 = 5 Then
+            Tinf = 1
+            ElseIf n1 = 6 Then
+            Tinf = 3
+            ElseIf n1 = 7 Then
+            Tinf = 4
+            ElseIf n1 = 8 Then
+            Tinf = 6
+            ElseIf n1 = 9 Then
+            Tinf = 9
+            ElseIf n1 = 10 Then
+            Tinf = 11
+            ElseIf n1 = 11 Then
+            Tinf = 14
+            ElseIf n1 = 12 Then
+            Tinf = 18
+            ElseIf n1 = 13 Then
+            Tinf = 22
+            ElseIf n1 = 14 Then
+            Tinf = 26
+            ElseIf n1 = 15 Then
+            Tinf = 31
+            ElseIf n = 16 Then
+            Tinf = 36
+            ElseIf n1 = 17 Then
+            Tinf = 42
+            ElseIf n1 = 18 Then
+            Tinf = 48
+            ElseIf n1 = 19 Then
+            Tinf = 54
+            ElseIf n1 = 20 Then
+            Tinf = 61
+            ElseIf n1 = 21 Then
+            Tinf = 68
+            ElseIf n1 = 22 Then
+            Tinf = 76
+            ElseIf n1 = 23 Then
+            Tinf = 84
+            ElseIf n1 = 24 Then
+            Tinf = 92
+            ElseIf n1 = 25 Then
+            Tinf = 101
+            ElseIf n1 = 26 Then
+            Tinf = 111
+            ElseIf n1 = 27 Then
+            Tinf = 120
+            ElseIf n1 = 28 Then
+            Tinf = 131
+            ElseIf n1 = 29 Then
+            Tinf = 141
+            ElseIf n1 = 30 Then
+            Tinf = 152
+            ElseIf n1 = 31 Then
+            Tinf = 164
+            ElseIf n1 = 32 Then
+            Tinf = 176
+            ElseIf n1 = 33 Then
+            Tinf = 188
+            ElseIf n1 = 34 Then
+            Tinf = 201
+            ElseIf n1 = 35 Then
+            Tinf = 214
+            ElseIf n1 = 36 Then
+            Tinf = 228
+            ElseIf n1 = 37 Then
+            Tinf = 242
+            ElseIf n1 = 38 Then
+            Tinf = 257
+            ElseIf n1 = 39 Then
+            Tinf = 272
+            ElseIf n1 = 40 Then
+            Tinf = 287
+            ElseIf n1 = 41 Then
+            Tinf = 303
+            ElseIf n1 = 42 Then
+            Tinf = 320
+            ElseIf n1 = 43 Then
+            Tinf = 337
+            ElseIf n1 = 44 Then
+            Tinf = 354
+            ElseIf n1 = 45 Then
+            Tinf = 372
+            ElseIf n1 = 46 Then
+            Tinf = 390
+            ElseIf n1 = 47 Then
+            Tinf = 408
+            ElseIf n1 = 48 Then
+            Tinf = 428
+            ElseIf n1 = 49 Then
+            Tinf = 447
+            ElseIf n1 = 50 Then
+            Tinf = 467
+            End If
+        Else
+            Tinf = ET + (WorksheetFunction.Norm_S_Inv(Alfa) * Sqr(VarT))
+        End If
+    
+    ElseIf Sheets("WilcoxonTest").TW_OP_Alfa90 = True Then
+        Alfa = 0.1
+        If n1 <= 50 Then
+ 
+            If n1 = 4 Then
+            Tinf = 1
+            ElseIf n1 = 5 Then
+            Tinf = 3
+            ElseIf n1 = 6 Then
+            Tinf = 4
+            ElseIf n1 = 7 Then
+            Tinf = 6
+            ElseIf n1 = 8 Then
+            Tinf = 9
+            ElseIf n1 = 9 Then
+            Tinf = 11
+            ElseIf n1 = 10 Then
+            Tinf = 15
+            ElseIf n1 = 11 Then
+            Tinf = 18
+            ElseIf n1 = 12 Then
+            Tinf = 22
+            ElseIf n1 = 13 Then
+            Tinf = 27
+            ElseIf n1 = 14 Then
+            Tinf = 32
+            ElseIf n1 = 15 Then
+            Tinf = 37
+            ElseIf n = 16 Then
+            Tinf = 43
+            ElseIf n1 = 17 Then
+            Tinf = 49
+            ElseIf n1 = 18 Then
+            Tinf = 56
+            ElseIf n1 = 19 Then
+            Tinf = 63
+            ElseIf n1 = 20 Then
+            Tinf = 70
+            ElseIf n1 = 21 Then
+            Tinf = 78
+            ElseIf n1 = 22 Then
+            Tinf = 87
+            ElseIf n1 = 23 Then
+            Tinf = 95
+            ElseIf n1 = 24 Then
+            Tinf = 105
+            ElseIf n1 = 25 Then
+            Tinf = 114
+            ElseIf n1 = 26 Then
+            Tinf = 125
+            ElseIf n1 = 27 Then
+            Tinf = 135
+            ElseIf n1 = 28 Then
+            Tinf = 146
+            ElseIf n1 = 29 Then
+            Tinf = 158
+            ElseIf n1 = 30 Then
+            Tinf = 170
+            ElseIf n1 = 31 Then
+            Tinf = 182
+            ElseIf n1 = 32 Then
+            Tinf = 195
+            ElseIf n1 = 33 Then
+            Tinf = 208
+            ElseIf n1 = 34 Then
+            Tinf = 222
+            ElseIf n1 = 35 Then
+            Tinf = 236
+            ElseIf n1 = 36 Then
+            Tinf = 251
+            ElseIf n1 = 37 Then
+            Tinf = 266
+            ElseIf n1 = 38 Then
+            Tinf = 282
+            ElseIf n1 = 39 Then
+            Tinf = 298
+            ElseIf n1 = 40 Then
+            Tinf = 314
+            ElseIf n1 = 41 Then
+            Tinf = 331
+            ElseIf n1 = 42 Then
+            Tinf = 349
+            ElseIf n1 = 43 Then
+            Tinf = 366
+            ElseIf n1 = 44 Then
+            Tinf = 385
+            ElseIf n1 = 45 Then
+            Tinf = 403
+            ElseIf n1 = 46 Then
+            Tinf = 423
+            ElseIf n1 = 47 Then
+            Tinf = 442
+            ElseIf n1 = 48 Then
+            Tinf = 463
+            ElseIf n1 = 49 Then
+            Tinf = 483
+            ElseIf n1 = 50 Then
+            Tinf = 504
+            End If
+        Else
+            Tinf = ET + (WorksheetFunction.Norm_S_Inv(Alfa) * Sqr(VarT))
+        End If
+        
+    ElseIf Sheets("WilcoxonTest").TW_OP_Alfa99 = True Then
+        Alfa = 0.01
+        If n1 <= 50 Then
+ 
+            If n1 = 4 Then
+            Tinf = 0
+            ElseIf n1 = 5 Then
+            Tinf = 0
+            ElseIf n1 = 6 Then
+            Tinf = 0
+            ElseIf n1 = 7 Then
+            Tinf = 1
+            ElseIf n1 = 8 Then
+            Tinf = 2
+            ElseIf n1 = 9 Then
+            Tinf = 4
+            ElseIf n1 = 10 Then
+            Tinf = 6
+            ElseIf n1 = 11 Then
+            Tinf = 8
+            ElseIf n1 = 12 Then
+            Tinf = 10
+            ElseIf n1 = 13 Then
+            Tinf = 13
+            ElseIf n1 = 14 Then
+            Tinf = 16
+            ElseIf n1 = 15 Then
+            Tinf = 20
+            ElseIf n = 16 Then
+            Tinf = 24
+            ElseIf n1 = 17 Then
+            Tinf = 28
+            ElseIf n1 = 18 Then
+            Tinf = 33
+            ElseIf n1 = 19 Then
+            Tinf = 38
+            ElseIf n1 = 20 Then
+            Tinf = 44
+            ElseIf n1 = 21 Then
+            Tinf = 50
+            ElseIf n1 = 22 Then
+            Tinf = 56
+            ElseIf n1 = 23 Then
+            Tinf = 63
+            ElseIf n1 = 24 Then
+            Tinf = 70
+            ElseIf n1 = 25 Then
+            Tinf = 77
+            ElseIf n1 = 26 Then
+            Tinf = 85
+            ElseIf n1 = 27 Then
+            Tinf = 94
+            ElseIf n1 = 28 Then
+            Tinf = 102
+            ElseIf n1 = 29 Then
+            Tinf = 111
+            ElseIf n1 = 30 Then
+            Tinf = 121
+            ElseIf n1 = 31 Then
+            Tinf = 131
+            ElseIf n1 = 32 Then
+            Tinf = 141
+            ElseIf n1 = 33 Then
+            Tinf = 152
+            ElseIf n1 = 34 Then
+            Tinf = 163
+            ElseIf n1 = 35 Then
+            Tinf = 175
+            ElseIf n1 = 36 Then
+            Tinf = 187
+            ElseIf n1 = 37 Then
+            Tinf = 199
+            ElseIf n1 = 38 Then
+            Tinf = 212
+            ElseIf n1 = 39 Then
+            Tinf = 225
+            ElseIf n1 = 40 Then
+            Tinf = 239
+            ElseIf n1 = 41 Then
+            Tinf = 253
+            ElseIf n1 = 42 Then
+            Tinf = 267
+            ElseIf n1 = 43 Then
+            Tinf = 282
+            ElseIf n1 = 44 Then
+            Tinf = 297
+            ElseIf n1 = 45 Then
+            Tinf = 313
+            ElseIf n1 = 46 Then
+            Tinf = 329
+            ElseIf n1 = 47 Then
+            Tinf = 346
+            ElseIf n1 = 48 Then
+            Tinf = 363
+            ElseIf n1 = 49 Then
+            Tinf = 381
+            ElseIf n1 = 50 Then
+            Tinf = 398
+            End If
+        Else
+            Tinf = ET + (WorksheetFunction.Norm_S_Inv(Alfa) * Sqr(VarT))
+        End If
+    End If
+    
+
+Cells(6, 39).Value = Tinf
+
+
+End If
+
+'--------------------------pvalue
+'Note: Due to pvalue differences between the tested pieces of software, we chose not to show in the results.
+
+Dim probability As Double
+Dim Zlower, Zupper As Double
+Dim AddSqi, SubSqi As Double
+Dim Mediana1, MedianaD As Double
+
+If Sheets("WilcoxonTest").TW_OP_MedDif = True Then
+    
+    If n1 <= 10 Then
+    
+        If n1 = 4 Then
+            If T = 0 Then
+                probability = 0.05
+                Else
+                probability = (-0.0583 * ((T) ^ 3)) + (0.8741 * ((T) ^ 2)) + (6.2121 * T) + 4.3706
+            End If
+        
+        ElseIf n1 = 5 Then
+            If T >= 0 And T <= 4 Then
+                probability = (-1.25 * (T) ^ 2) - (1 * T) + 3.25
+                ElseIf T > 4 And T <= 15 Then
+                probability = (-0.0506 * ((T) ^ 3)) + (1.1824 * ((T) ^ 2)) - (0.3251 * T) + 7.3605
+            End If
+        
+        ElseIf n1 = 6 Then
+            If T >= 0 And T < 4 Then
+                probability = (-0.0833 * (T) ^ 2) + (1.5833 * T) + 1
+                ElseIf T >= 4 And T < 18 Then
+                probability = (-0.0332 * ((T) ^ 3)) + (1.0445 * ((T) ^ 2)) - (3.4421 * T) + 9.3752
+                ElseIf T >= 18 And T <= 21 Then
+                probability = (-0.4464 * (T) ^ 2) + (19.179 * T) - 106.54
+            End If
+        
+        ElseIf n1 = 7 Then
+            If T >= 1 And T < 4 Then
+                probability = (-0.0833 * (T) ^ 2) + (0.4167 * T) + 0.5
+                ElseIf T >= 4 And T < 22 Then
+                probability = (-0.0196 * ((T) ^ 3)) + (0.8138 * ((T) ^ 2)) - (4.9448 * T) + 13.511
+                ElseIf T >= 22 And T <= 28 Then
+                probability = (-0.2533 * (T) ^ 2) + (14.278 * T) - 101.55
+            End If
+        
+        ElseIf n1 = 8 Then
+            If T >= 1 And T < 9.5 Then
+                probability = (-0.1 * (T) ^ 2) + (0.1895 * T) + 0.2054
+                ElseIf T >= 9.5 And T < 27 Then
+                probability = (-0.0098 * ((T) ^ 3)) + (0.5269 * ((T) ^ 2)) - (4.2334 * T) + 12.395
+                ElseIf T >= 27 And T <= 36 Then
+                probability = (-0.0948 * (T) ^ 2) + (7.0761 * T) - 31.927
+            End If
+    
+        ElseIf n1 = 9 Then
+            If T >= 2 And T < 11 Then
+                probability = (0.0586 * (T) ^ 2) + (0.0116 * T) + 0.183
+                ElseIf T >= 11 And T <= 32 Then
+                probability = (-0.0071 * ((T) ^ 3)) + (0.4814 * ((T) ^ 2)) - (6.41 * T) + 31.761
+                ElseIf T > 32 And T <= 45 Then
+                probability = (-0.1004 * (T) ^ 2) + (8.76 * T) - 91.254
+            End If
+    
+        ElseIf n1 = 10 Then
+            If T >= 4 And T < 15 Then
+                probability = (0.0675 * (T) ^ 2) - (0.4087 * T) + 1.0135
+                ElseIf T >= 15 And T <= 37 Then
+                probability = (-0.0039 * ((T) ^ 3)) + (0.323 * ((T) ^ 2)) - (5.0724 * T) + 26.64
+                ElseIf T > 37 And T <= 55 Then
+                probability = (-0.0575 * (T) ^ 2) + (6.1151 * T) - 62.656
+            End If
+    
+        End If
+        
+                If probability > 50 Then
+                    pvalue = 2 * (1 - (probability / 100))
+                    Else
+                    pvalue = (probability / 100)
+                 End If
+    
+    
+    ElseIf n1 > 10 And n1 <= 50 Then
+    
+    i = 6
+    Do
+    
+    AddSqi = Cells(i, 37).Value + 1
+    SubSqi = Cells(i, 37).Value - 1
+    Cells(i, 45).Value = AddSqi
+    Cells(i, 46).Value = SubSqi
+    
+    i = i + 1
+    Loop While Cells(i, 3) <> ""
+    
+        Zlower = (WorksheetFunction.Sum(Range("$AS$6:$AS$105"))) / (Sqr(n1 * (n1 + 1) * ((2 * n1) + 1) / 6))
+        Zupper = (WorksheetFunction.Sum(Range("$AT$6:$AT$105"))) / (Sqr(n1 * (n1 + 1) * ((2 * n1) + 1) / 6))
+        Z = WorksheetFunction.Min(Zlower, Zupper)
+            
+            If Zlower < Zupper Then
+                pvalue = 2 * WorksheetFunction.Norm_S_Dist(Zlower, True)
+            Else
+                pvalue = 2 * (1 - (WorksheetFunction.Norm_S_Dist(Zupper, True)))
+            End If
+            
+ 
+    ElseIf n1 > 50 Then
+    
+        If A >= 0 Then
+            Z = (T - 0.5 - ET) / Sqr(VarT)
+            pvalue = 2 * (1 - WorksheetFunction.Norm_S_Dist(Z, True))
+        
+        Else
+            Z = (T + 0.5 - ET) / Sqr(VarT)
+            pvalue = 2 * WorksheetFunction.Norm_S_Dist(Z, True)
+        End If
+    End If
+   
+   
+ElseIf Sheets("WilcoxonTest").TW_OP_MedMaior = True Then
+    
+      
+    If n1 <= 10 Then
+    
+        If n1 = 4 Then
+            If T = 0 Then
+                probability = 0.05
+                Else
+                probability = (-0.0583 * ((T) ^ 3)) + (0.8741 * ((T) ^ 2)) + (6.2121 * T) + 4.3706
+            End If
+        
+        ElseIf n1 = 5 Then
+            If T >= 0 And T <= 4 Then
+                probability = (-1.25 * (T) ^ 2) - (1 * T) + 3.25
+                ElseIf T > 4 And T <= 15 Then
+                probability = (-0.0506 * ((T) ^ 3)) + (1.1824 * ((T) ^ 2)) - (0.3251 * T) + 7.3605
+            End If
+        
+        ElseIf n1 = 6 Then
+            If T >= 0 And T < 4 Then
+                probability = (-0.0833 * (T) ^ 2) + (1.5833 * T) + 1
+                ElseIf T >= 4 And T < 18 Then
+                probability = (-0.0332 * ((T) ^ 3)) + (1.0445 * ((T) ^ 2)) - (3.4421 * T) + 9.3752
+                ElseIf T >= 18 And T <= 21 Then
+                probability = (-0.4464 * (T) ^ 2) + (19.179 * T) - 106.54
+            End If
+        
+        ElseIf n1 = 7 Then
+            If T >= 1 And T < 4 Then
+                probability = (-0.0833 * (T) ^ 2) + (0.4167 * T) + 0.5
+                ElseIf T >= 4 And T < 22 Then
+                probability = (-0.0196 * ((T) ^ 3)) + (0.8138 * ((T) ^ 2)) - (4.9448 * T) + 13.511
+                ElseIf T >= 22 And T <= 28 Then
+                probability = (-0.2533 * (T) ^ 2) + (14.278 * T) - 101.55
+            End If
+        
+        ElseIf n1 = 8 Then
+            If T >= 1 And T < 9.5 Then
+                probability = (-0.1 * (T) ^ 2) + (0.1895 * T) + 0.2054
+                ElseIf T >= 9.5 And T < 27 Then
+                probability = (-0.0098 * ((T) ^ 3)) + (0.5269 * ((T) ^ 2)) - (4.2334 * T) + 12.395
+                ElseIf T >= 27 And T <= 36 Then
+                probability = (-0.0948 * (T) ^ 2) + (7.0761 * T) - 31.927
+            End If
+    
+        ElseIf n1 = 9 Then
+            If T >= 2 And T < 11 Then
+                probability = (0.0586 * (T) ^ 2) + (0.0116 * T) + 0.183
+                ElseIf T >= 11 And T <= 32 Then
+                probability = (-0.0071 * ((T) ^ 3)) + (0.4814 * ((T) ^ 2)) - (6.41 * T) + 31.761
+                ElseIf T > 32 And T <= 45 Then
+                probability = (-0.1004 * (T) ^ 2) + (8.76 * T) - 91.254
+            End If
+    
+        ElseIf n1 = 10 Then
+            If T >= 4 And T < 15 Then
+                probability = (0.0675 * (T) ^ 2) - (0.4087 * T) + 1.0135
+                ElseIf T >= 15 And T <= 37 Then
+                probability = (-0.0039 * ((T) ^ 3)) + (0.323 * ((T) ^ 2)) - (5.0724 * T) + 26.64
+                ElseIf T > 37 And T <= 55 Then
+                probability = (-0.0575 * (T) ^ 2) + (6.1151 * T) - 62.656
+            End If
+    
+        End If
+        
+            pvalue = (1 - (probability / 100))
+    
+              
+    ElseIf n1 > 10 And n1 <= 50 Then
+    
+    i = 6
+    Do
+    
+    AddSqi = Cells(i, 37).Value + 1
+    SubSqi = Cells(i, 37).Value - 1
+    
+    Cells(i, 45).Value = AddSqi
+    Cells(i, 46).Value = SubSqi
+    
+    i = i + 1
+    Loop While Cells(i, 3) <> ""
+    
+        Zlower = (WorksheetFunction.Sum(Range("$AS$6:$AS$105"))) / (Sqr(n1 * (n1 + 1) * ((2 * n1) + 1) / 6))
+        Zupper = (WorksheetFunction.Sum(Range("$AT$6:$AT$105"))) / (Sqr(n1 * (n1 + 1) * ((2 * n1) + 1) / 6))
+        pvalue = (1 - (WorksheetFunction.Norm_S_Dist(Zupper, True)))
+    
+    
+    ElseIf n1 > 50 Then
+    
+        Z = (T - 0.5 - ET) / Sqr(VarT)
+        pvalue = (1 - WorksheetFunction.Norm_S_Dist(Z, True))
+    
+    End If
+
+
+ElseIf Sheets("WilcoxonTest").TW_OP_MedMenor = True Then
+    
+    
+    If n1 <= 10 Then
+    
+        If n1 = 4 Then
+            If T = 0 Then
+                probability = 0.05
+                Else
+                probability = (-0.0583 * ((T) ^ 3)) + (0.8741 * ((T) ^ 2)) + (6.2121 * T) + 4.3706
+            End If
+        
+        ElseIf n1 = 5 Then
+            If T >= 0 And T <= 4 Then
+                probability = (-1.25 * (T) ^ 2) - (1 * T) + 3.25
+                ElseIf T > 4 And T <= 15 Then
+                probability = (-0.0506 * ((T) ^ 3)) + (1.1824 * ((T) ^ 2)) - (0.3251 * T) + 7.3605
+            End If
+        
+        ElseIf n1 = 6 Then
+            If T >= 0 And T < 4 Then
+                probability = (-0.0833 * (T) ^ 2) + (1.5833 * T) + 1
+                ElseIf T >= 4 And T < 18 Then
+                probability = (-0.0332 * ((T) ^ 3)) + (1.0445 * ((T) ^ 2)) - (3.4421 * T) + 9.3752
+                ElseIf T >= 18 And T <= 21 Then
+                probability = (-0.4464 * (T) ^ 2) + (19.179 * T) - 106.54
+            End If
+        
+        ElseIf n1 = 7 Then
+            If T >= 1 And T < 4 Then
+                probability = (-0.0833 * (T) ^ 2) + (0.4167 * T) + 0.5
+                ElseIf T >= 4 And T < 22 Then
+                probability = (-0.0196 * ((T) ^ 3)) + (0.8138 * ((T) ^ 2)) - (4.9448 * T) + 13.511
+                ElseIf T >= 22 And T <= 28 Then
+                probability = (-0.2533 * (T) ^ 2) + (14.278 * T) - 101.55
+            End If
+        
+        ElseIf n1 = 8 Then
+            If T >= 1 And T < 9.5 Then
+                probability = (-0.1 * (T) ^ 2) + (0.1895 * T) + 0.2054
+                ElseIf T >= 9.5 And T < 27 Then
+                probability = (-0.0098 * ((T) ^ 3)) + (0.5269 * ((T) ^ 2)) - (4.2334 * T) + 12.395
+                ElseIf T >= 27 And T <= 36 Then
+                probability = (-0.0948 * (T) ^ 2) + (7.0761 * T) - 31.927
+            End If
+    
+        ElseIf n1 = 9 Then
+            If T >= 2 And T < 11 Then
+                probability = (0.0586 * (T) ^ 2) + (0.0116 * T) + 0.183
+                ElseIf T >= 11 And T <= 32 Then
+                probability = (-0.0071 * ((T) ^ 3)) + (0.4814 * ((T) ^ 2)) - (6.41 * T) + 31.761
+                ElseIf T > 32 And T <= 45 Then
+                probability = (-0.1004 * (T) ^ 2) + (8.76 * T) - 91.254
+            End If
+    
+        ElseIf n1 = 10 Then
+            If T >= 4 And T < 15 Then
+                probability = (0.0675 * (T) ^ 2) - (0.4087 * T) + 1.0135
+                ElseIf T >= 15 And T <= 37 Then
+                probability = (-0.0039 * ((T) ^ 3)) + (0.323 * ((T) ^ 2)) - (5.0724 * T) + 26.64
+                ElseIf T > 37 And T <= 55 Then
+                probability = (-0.0575 * (T) ^ 2) + (6.1151 * T) - 62.656
+            End If
+    
+        End If
+        
+             pvalue = 2 * (1 - (probability / 100))
+
+    ElseIf n1 > 10 And n1 <= 50 Then
+    
+        i = 6
+        Do
+        
+        AddSqi = Cells(i, 37).Value + 1
+        SubSqi = Cells(i, 37).Value - 1
+        
+        Cells(i, 45).Value = AddSqi
+        Cells(i, 46).Value = SubSqi
+        
+        i = i + 1
+        Loop While Cells(i, 3) <> ""
+        
+        Zlower = (WorksheetFunction.Sum(Range("$AS$6:$AS$105"))) / (Sqr(n1 * (n1 + 1) * ((2 * n1) + 1) / 6))
+        Zupper = (WorksheetFunction.Sum(Range("$AT$6:$AT$105"))) / (Sqr(n1 * (n1 + 1) * ((2 * n1) + 1) / 6))
+        pvalue = (WorksheetFunction.Norm_S_Dist(Zlower, True))
+         
+    ElseIf n1 > 50 Then
+    
+        Z = (T + 0.5 - ET) / Sqr(VarT)
+        pvalue = (WorksheetFunction.Norm_S_Dist(Z, True))
+    End If
+
+End If
+
+Cells(6, 41).Value = pvalue
+
+
+If Sheets("WilcoxonTest").TW_OP_Amostraúnica = True Then
+    Mediana1 = WorksheetFunction.Median(Range("C6:C105"))
+ElseIf Sheets("WilcoxonTest").TW_OP_Pareado = True Then
+    MedianaD = WorksheetFunction.Median(Range("AB6:AB105"))
+End If
+
+Frm_ResultadosTesteWilcoxon.TWAU_TB_Med1.Value = Mediana1
+Frm_ResultadosTesteWilcoxon.TWP_TB_MedD.Value = MedianaD
+Frm_ResultadosTesteWilcoxon.TWAU_TB_n1.Value = n1
+Frm_ResultadosTesteWilcoxon.TWP_TB_n1.Value = n1
+Frm_ResultadosTesteWilcoxon.TWAU_TB_Alfa.Value = Alfa
+Frm_ResultadosTesteWilcoxon.TWP_TB_Alfa.Value = Alfa
+Frm_ResultadosTesteWilcoxon.TWAU_TB_T.Value = T
+Frm_ResultadosTesteWilcoxon.TWP_TB_T.Value = T
+'Frm_ResultadosTesteWilcoxon.TWAU_TB_pvalue.Value = pvalue (not shown in the results)
+'Frm_ResultadosTesteWilcoxon.TWP_TB_pvalue.Value = pvalue (not shown in the results)
+
+If Cells(2, 94).Value = "Teste de Wilcoxon" Then
+
+    If Sheets("WilcoxonTest").TW_OP_MedDif = True Then
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ho = "Igual a " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ha = "Diferente de " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ho = "Igual a " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ha = "Diferente de " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tsup.Value = Tsup
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tsup.Value = Tsup
+        
+        If T < Tinf Or T > Tsup Then
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Rejeita-se Hipótese nula Ho"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Rejeita-se Hipótese nula Ho"
+            Else
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Não se rejeita Hipótese nula Ho"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Não se rejeita Hipótese nula Ho"
+        End If
+    
+    ElseIf Sheets("WilcoxonTest").TW_OP_MedMaior = True Then
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ho = "Menor ou igual a " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ha = "Maior que " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ho = "Menor ou igual a " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ha = "Maior que " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tsup.Value = "-"
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tsup.Value = "-"
+      
+        If T > Tinf Then
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Rejeita-se Hipótese nula Ho"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Rejeita-se Hipótese nula Ho"
+            Else
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Não se rejeita Hipótese nula Ho"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Não se rejeita Hipótese nula Ho"
+        End If
+
+    ElseIf Sheets("WilcoxonTest").TW_OP_MedMenor = True Then
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ho = "Maior ou igual a " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ha = "Menor que " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ho = "Maior ou igual a " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ha = "Menor que " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tsup.Value = "-"
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tsup.Value = "-"
+
+        If T < Tinf Then
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Rejeita-se Hipótese nula Ho"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Rejeita-se Hipótese nula Ho"
+            Else
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Não se rejeita Hipótese nula Ho"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Não se rejeita Hipótese nula Ho"
+        End If
+    End If
+    
+    
+  ElseIf Cells(2, 94).Value = "Wilcoxon's test" Then
+    
+  If Sheets("WilcoxonTest").TW_OP_MedDif = True Then
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ho = "Equal to " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ha = "Different to " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ho = "Equal to " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ha = "Different to " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tsup.Value = Tsup
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tsup.Value = Tsup
+        
+        If T < Tinf Or T > Tsup Then
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Null Hypothesis Rejected"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Null Hypothesis Accepted"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Null Hypothesis Accepted"
+        End If
+    
+    ElseIf Sheets("WilcoxonTest").TW_OP_MedMaior = True Then
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ho = "<= " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ha = "> " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ho = "<= " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ha = "> " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tsup.Value = "-"
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tsup.Value = "-"
+      
+        If T > Tinf Then
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Null Hypothesis Rejected"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Null Hypothesis Accepted"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Null Hypothesis Accepted"
+        End If
+
+    ElseIf Sheets("WilcoxonTest").TW_OP_MedMenor = True Then
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ho = ">= " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Ha = "< " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ho = ">= " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Ha = "< " + Planilha11.TW_TB_HipóteseNula.Value
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tinf.Value = Tinf
+        Frm_ResultadosTesteWilcoxon.TWAU_TB_Tsup.Value = "-"
+        Frm_ResultadosTesteWilcoxon.TWP_TB_Tsup.Value = "-"
+
+        If T < Tinf Then
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Null Hypothesis Rejected"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteWilcoxon.TWAU_TB_Conclusão.Value = "Null Hypothesis Accepted"
+            Frm_ResultadosTesteWilcoxon.TWP_TB_Conclusão.Value = "Null Hypothesis Accepted"
+        End If
+    End If
+    
+  End If
+    
+       
+Cells(6, 3).Select
+
+    If Sheets("WilcoxonTest").TW_OP_Amostraúnica = True Then
+        Frm_ResultadosTesteWilcoxon.MultiPage1.Pages(0).Visible = True
+        Frm_ResultadosTesteWilcoxon.MultiPage1.Pages(1).Visible = False
+    ElseIf Sheets("WilcoxonTest").TW_OP_Pareado = True Then
+        Frm_ResultadosTesteWilcoxon.MultiPage1.Pages(0).Visible = False
+        Frm_ResultadosTesteWilcoxon.MultiPage1.Pages(1).Visible = True
+    End If
+        
+Frm_ResultadosTesteWilcoxon.Show
+
+End Sub
