@@ -1,0 +1,121 @@
+
+Private Sub CalcularDm()
+Sheets("Qsa").Activate
+
+Dim ib1, ib2, ib3, ib4, ib5, ib6, ib7, ib8, ib9, ib10, ib11 As Long
+Dim Dm As Double
+Dim D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11 As Long
+
+ib1 = Planilha3.Cells(6, 21).Value
+ib2 = Cells(7, 21).Value
+ib3 = Cells(8, 21).Value
+ib4 = Cells(9, 21).Value
+ib5 = Cells(10, 21).Value
+ib6 = Cells(11, 21).Value
+ib7 = Cells(12, 21).Value
+ib8 = Cells(13, 21).Value
+ib9 = Cells(14, 21).Value
+ib10 = Cells(15, 21).Value
+ib11 = Cells(16, 21).Value
+
+
+D1 = ib1 * 45.2548
+D2 = ib2 * 22.6274
+D3 = ib3 * 11.3137
+D4 = ib4 * 5.6569
+D5 = ib5 * 2.8284
+D6 = ib6 * 1.4142
+D7 = ib7 * 0.7071
+D8 = ib8 * 0.3536
+D9 = ib9 * 0.1768
+D10 = ib10 * 0.0884
+D11 = ib11 * 0.0158
+
+Cells(7, 40).Value = D1
+Cells(8, 40).Value = D2
+Cells(9, 40).Value = D3
+Cells(10, 40).Value = D4
+Cells(11, 40).Value = D5
+Cells(12, 40).Value = D6
+Cells(13, 40).Value = D7
+Cells(14, 40).Value = D8
+Cells(15, 40).Value = D9
+Cells(16, 40).Value = D10
+Cells(17, 40).Value = D11
+Dm = (D1 + D2 + D3 + D4 + D5 + D6 + D7 + D8 + D9 + D10 + D11) / (100)
+Dm = Format(Dm, "0.00000")
+Planilha3.TextBox1.Value = Dm
+End Sub
+
+Sub DescargaSolidaArrastoMD()
+Dim Qs, qsa1, qsa2, QsaT, ks, kr, k, p, S, S1, V, L, R As Double
+Dim gamaS As Double
+Dim Dm, D90 As Double
+Dim ns As Double
+Dim contador As Integer
+Dim Celula As Range
+Dim i As Long
+
+i = 6
+Do
+V = Cells(i, 3).Value
+L = Cells(i, 4).Value
+p = Cells(i, 5).Value
+ns = Cells(i, 6).Value
+Dm = Cells(i, 7).Value
+D90 = Cells(i, 8).Value
+
+If V = "" Then
+    MsgBox ("Please, Fill in all the columns")
+    Exit Sub
+    Else
+End If
+ks = 1 / ns
+kr = 26 / ((D90) ^ (1 / 6))
+k = ((ks / kr) ^ (3 / 2))
+Cells(i, 100).Value = ks
+Cells(i, 101).Value = kr
+Cells(i, 102).Value = k
+
+If Sheets("Qsa").OP_SExiste.Value = True Then
+S = Cells(i, 9).Value
+qsa1 = (((9810 * k * p * S) - (0.047 * 16186.5 * Dm)) / (0.25 * 10))
+qsa2 = ((qsa1) ^ (3 / 2))
+QsaT = 1.02 * 0.0001 * qsa2 * L * 86400
+Cells(i, 11).Value = QsaT
+ElseIf Sheets("Qsa").OP_SNaoExiste.Value = True Then
+R = Cells(i, 10).Value
+S1 = (V * ns) / ((R) ^ (2 / 3))
+S = ((S1) ^ (2))
+qsa1 = (((9810 * k * p * S) - (0.047 * 16186.5 * Dm)) / (0.25 * 10))
+qsa2 = ((qsa1) ^ (3 / 2))
+QsaT = 1.02 * 0.0001 * qsa2 * L * 86400
+End If
+
+Qs = QsaT * (26996.5 / 16186.5)
+Cells(i, 11).Value = Qs
+i = i + 1
+Loop While Cells(i, 3) <> ""
+End Sub
+
+Sub VoltarFrmDescargaSolidaFundo()
+
+With Planilha1
+.Visible = xlSheetVisible
+End With
+With Planilha3
+.Visible = xlSheetVeryHidden
+End With
+Frm_SedimentTool.Show
+
+End Sub
+
+Sub LimparCampoQsa()
+Range("B6:K100").Select
+Selection.ClearContents
+Range("U6:U16").Select
+Selection.ClearContents
+
+
+End Sub
+
