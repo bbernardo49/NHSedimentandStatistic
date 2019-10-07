@@ -1,0 +1,375 @@
+Sub Voltar_EstatisticaBasica()
+
+Sheets("VarianceTest").Activate
+Planilha1.Visible = xlSheetVisible
+Planilha8.Visible = xlSheetHidden
+Frm_EstatisticaBasica.Show
+End Sub
+
+Private Sub TesteVariância()
+
+With Range("SF6:SF105").Select
+    Selection.ClearContents
+    Cells(6, 3).Select
+End With
+
+Dim cont1, cont2 As Long
+Dim n1, n2, nd As Long
+Dim GL, GL1, GL2 As Double
+Dim i As Long
+
+    cont1 = WorksheetFunction.CountA(Range("$C$6:$C$105"))
+    cont2 = WorksheetFunction.CountA(Range("$E$6:$E$105"))
+   
+    n1 = cont1
+    n2 = cont2
+  
+Dim Soma1, Soma2  As Double
+Dim Desvio1, Desvio2 As Double
+Dim Variancia1, Variancia2 As Double
+Dim X2calc As Double
+Dim X2critE, X2critD As Double
+Dim Fcalc As Double
+Dim FcritE, FcritD As Double
+Dim pvalue As Double
+Dim Alfa As Double
+
+If Sheets("VarianceTest").OP_TesteX = True Then
+      
+    If n1 = 0 And n2 > 0 Then
+        MsgBox "Enter the data in Column 1 to perform the Chi-Square test."
+        Exit Sub
+        Else
+    End If
+    
+        If n1 < 4 Then
+            MsgBox "For the Chi-square or F test, a minimum of 4 values is recommended"
+            Exit Sub
+        Else
+    End If
+Desvio1 = WorksheetFunction.StDev(Range("$C$6:$C$105"))
+Variancia1 = (Desvio1) ^ 2
+
+
+ElseIf Sheets("VarianceTest").OP_TesteF = True Then
+  If n1 < 4 Or n2 < 4 Then
+        MsgBox "For the F test, a minimum of 4 values is recommended."
+        Exit Sub
+        Else
+    End If
+
+    Desvio1 = WorksheetFunction.StDev(Range("$C$6:$C$105"))
+    Desvio2 = WorksheetFunction.StDev(Range("$E$6:$E$105"))
+    Variancia1 = (Desvio1) ^ 2
+    Variancia2 = (Desvio2) ^ 2
+End If
+
+'x2 test
+
+If Sheets("VarianceTest").OP_TesteX = True Then
+    VarianciaPopulacional = Planilha8.TB_HipoteseNula.Value
+    GL = n1 - 1
+    X2calc = ((n1 - 1) * Variancia1) / VarianciaPopulacional
+        
+    If Sheets("VarianceTest").OP_Alfa95 = True Then
+        Alfa = 0.05
+            If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then     'twotailed
+                X2critE = WorksheetFunction.ChiSq_Inv((Alfa / 2), GL)
+                X2critD = WorksheetFunction.ChiSq_Inv_RT((Alfa / 2), GL)
+                pvalue1 = WorksheetFunction.ChiSq_Dist_RT(X2calc, GL)
+                pvalue2 = WorksheetFunction.ChiSq_Dist(X2calc, GL, True)
+                pvalue = 2 * WorksheetFunction.Min(pvalue1, pvalue2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then   'Upper tailed
+                X2critD = WorksheetFunction.ChiSq_Inv_RT(Alfa, GL)
+                pvalue = WorksheetFunction.ChiSq_Dist_RT(X2calc, GL)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then   'Lower tailed
+                X2critE = WorksheetFunction.ChiSq_Inv((Alfa), GL)
+                pvalue = WorksheetFunction.ChiSq_Dist(X2calc, GL, True)
+            End If
+   
+    ElseIf Sheets("VarianceTest").OP_Alfa99 = True Then
+        Alfa = 0.01
+            If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+                X2critE = WorksheetFunction.ChiSq_Inv((Alfa / 2), GL)
+                X2critD = WorksheetFunction.ChiSq_Inv_RT(Alfa / 2, GL)
+                pvalue1 = WorksheetFunction.ChiSq_Dist_RT(X2calc, GL)
+                pvalue2 = WorksheetFunction.ChiSq_Dist(X2calc, GL, True)
+                pvalue = 2 * WorksheetFunction.Min(pvalue1, pvalue2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+                X2critD = WorksheetFunction.ChiSq_Inv_RT(Alfa, GL)
+                pvalue = WorksheetFunction.ChiSq_Dist_RT(X2calc, GL)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+                X2critE = WorksheetFunction.ChiSq_Inv((Alfa), GL)
+                pvalue = WorksheetFunction.ChiSq_Dist(X2calc, GL, True)
+            End If
+
+    ElseIf Sheets("VarianceTest").OP_Alfa90 = True Then
+        Alfa = 0.1
+            If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+                X2critE = WorksheetFunction.ChiSq_Inv((Alfa / 2), GL)
+                X2critD = WorksheetFunction.ChiSq_Inv_RT(Alfa / 2, GL)
+                pvalue1 = WorksheetFunction.ChiSq_Dist_RT(X2calc, GL)
+                pvalue2 = WorksheetFunction.ChiSq_Dist(X2calc, GL, True)
+                pvalue = 2 * WorksheetFunction.Min(pvalue1, pvalue2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+                X2critD = WorksheetFunction.ChiSq_Inv_RT(Alfa, GL)
+                pvalue = WorksheetFunction.ChiSq_Dist_RT(X2calc, GL)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+                X2critE = WorksheetFunction.ChiSq_Inv((Alfa), GL)
+                pvalue = WorksheetFunction.ChiSq_Dist(X2calc, GL, True)
+            End If
+    End If
+
+    Frm_ResultadosTesteVariancia.QUI_TB_Variancia1 = Variancia1
+    Frm_ResultadosTesteVariancia.QUI_TB_n1 = n1
+    Frm_ResultadosTesteVariancia.QUI_TB_GL = GL
+    Frm_ResultadosTesteVariancia.QUI_TB_Alfa = Alfa
+    Frm_ResultadosTesteVariancia.QUI_TB_Ho = VarianciaPopulacional
+     
+If Cells(2, 4).Value = "Teste de Variância" Then
+    If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+        Frm_ResultadosTesteVariancia.QUI_TB_Ho = "Eqqual to " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_Ha = "Different to " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critE.Value = X2critE
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critD.Value = X2critD
+            If X2calc < X2critE Or X2calc > X2critD Then
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null hypothesis rejected"
+            Else
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+    
+    ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+        Frm_ResultadosTesteVariancia.QUI_TB_Ho = "= " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_Ha = "> " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critE.Value = "N/A"
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critD.Value = X2critD
+            If X2calc > X2critD Then
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null hypothesis rejected"
+            Else
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+            
+    ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+        Frm_ResultadosTesteVariancia.QUI_TB_Ho = "= " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_Ha = "< " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critE.Value = X2critE
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critD.Value = "N/A"
+            If X2calc < X2critD Then
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null hypothesis rejected"
+            Else
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null hypothesis accepted"
+            End If
+    End If
+
+ElseIf Cells(2, 4).Value = "Variance test" Then
+ If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+        Frm_ResultadosTesteVariancia.QUI_TB_Ho = "Variance equal to " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_Ha = "Variance different to " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critE.Value = X2critE
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critD.Value = X2critD
+            If X2calc < X2critE Or X2calc > X2critD Then
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null Hypotheses Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null Hypotheses Accepted"
+            End If
+    
+    ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+        Frm_ResultadosTesteVariancia.QUI_TB_Ho = "Equal to " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_Ha = "> " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critE.Value = "N/A"
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critD.Value = X2critD
+            If X2calc > X2critD Then
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null Hypotheses Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null Hypotheses Accepted"
+            End If
+            
+    ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+        Frm_ResultadosTesteVariancia.QUI_TB_Ho = "Equal to " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_Ha = "< " + VarianciaPopulacional
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critE.Value = X2critE
+        Frm_ResultadosTesteVariancia.QUI_TB_X2critD.Value = "N/A"
+            If X2calc < X2critD Then
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null Hypotheses Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.QUI_TB_Conclusao.Value = "Null Hypotheses Accepted"
+            End If
+    End If
+End If
+      
+    Frm_ResultadosTesteVariancia.QUI_TB_X2calc.Value = X2calc
+    Frm_ResultadosTesteVariancia.QUI_TB_pvalue.Value = pvalue
+             
+    Frm_ResultadosTesteVariancia.MultiPage1.Pages(0).Visible = True
+    Frm_ResultadosTesteVariancia.MultiPage1.Pages(1).Visible = False
+    Frm_ResultadosTesteVariancia.Show
+
+'F-test
+ElseIf Sheets("VarianceTest").OP_TesteF = True Then
+    RelaçãoVariância = Planilha8.TB_HipoteseNula.Value
+    GL1 = n1 - 1
+    GL2 = n2 - 1
+    Fcalc = Variancia1 / Variancia2
+    Cells(6, 20).Select
+   
+ If Sheets("VarianceTest").OP_Alfa95 = True Then
+        Alfa = 0.05
+            If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+                FcritE = WorksheetFunction.F_Inv((Alfa / 2), GL1, GL2)
+                FcritD = WorksheetFunction.F_Inv_RT(Alfa / 2, GL1, GL2)
+                pvalue1 = WorksheetFunction.F_Dist_RT(Fcalc, GL1, GL2)
+                pvalue2 = WorksheetFunction.F_Dist(Fcalc, GL1, GL2, True)
+                pvalue = 2 * WorksheetFunction.Min(pvalue1, pvalue2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then   'Upper tailed
+                FcritD = WorksheetFunction.F_Inv_RT(Alfa, GL1, GL2)
+                pvalue = WorksheetFunction.F_Dist_RT(Fcalc, GL1, GL2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then   'Lower tailed
+                FcritE = WorksheetFunction.F_Inv(Alfa, GL1, GL2)
+                pvalue = WorksheetFunction.F_Dist(Fcalc, GL1, GL2, True)
+            End If
+   
+    ElseIf Sheets("VarianceTest").OP_Alfa99 = True Then
+        Alfa = 0.01
+            If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+                FcritE = WorksheetFunction.F_Inv((Alfa / 2), GL1, GL2)
+                FcritD = WorksheetFunction.F_Inv_RT((Alfa / 2), GL1, GL2)
+                
+                pvalue1 = WorksheetFunction.F_Dist_RT(Fcalc, GL1, GL2)
+                pvalue2 = WorksheetFunction.F_Dist(Fcalc, GL1, GL2, True)
+                pvalue = 2 * WorksheetFunction.Min(pvalue1, pvalue2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+                FcritD = WorksheetFunction.F_Inv_RT((Alfa / 2), GL1, GL2)
+                pvalue = WorksheetFunction.F_Dist_RT(Fcalc, GL1, GL2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+                FcritE = WorksheetFunction.F_Inv((Alfa / 2), GL1, GL2)
+                pvalue = WorksheetFunction.F_Dist(Fcalc, GL1, GL2, True)
+            End If
+
+    ElseIf Sheets("VarianceTest").OP_Alfa90 = True Then
+        Alfa = 0.1
+            If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+                FcritE = WorksheetFunction.F_Inv((Alfa / 2), GL1, GL2)
+                FcritD = WorksheetFunction.F_Inv_RT((Alfa / 2), GL1, GL2)
+                
+                pvalue1 = WorksheetFunction.F_Dist_RT(Fcalc, GL1, GL2)
+                pvalue2 = WorksheetFunction.F_Dist(Fcalc, GL1, GL2, True)
+                pvalue = 2 * WorksheetFunction.Min(pvalue1, pvalue2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+                FcritD = WorksheetFunction.F_Inv_RT((Alfa / 2), GL1, GL2)
+                pvalue = WorksheetFunction.F_Dist_RT(Fcalc, GL1, GL2)
+                
+                ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+                FcritE = WorksheetFunction.F_Inv((Alfa / 2), GL1, GL2)
+                pvalue = WorksheetFunction.F_Dist(Fcalc, GL1, GL2, True)
+            End If
+    End If
+
+    Frm_ResultadosTesteVariancia.F_TB_Desvio1 = Desvio1
+    Frm_ResultadosTesteVariancia.F_TB_Desvio2 = Desvio2
+    Frm_ResultadosTesteVariancia.F_TB_n1 = n1
+    Frm_ResultadosTesteVariancia.F_TB_n2 = n2
+    Frm_ResultadosTesteVariancia.F_TB_GL1 = GL1
+    Frm_ResultadosTesteVariancia.F_TB_GL2 = GL2
+    Frm_ResultadosTesteVariancia.F_TB_Alfa = Alfa
+    Frm_ResultadosTesteVariancia.F_TB_Ho = RelaçãoVariância
+
+If Cells(2, 4).Value = "Teste de Variância" Then
+    If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+        Frm_ResultadosTesteVariancia.F_TB_Ho = "The variances are eqqual"
+        Frm_ResultadosTesteVariancia.F_TB_Ha = "The variances are different"
+        Frm_ResultadosTesteVariancia.F_TB_FcritE.Value = FcritE
+        Frm_ResultadosTesteVariancia.F_TB_FcritD.Value = FcritD
+            If Fcalc < FcritE Or Fcalc > FcritD Then
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+    
+    ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+        Frm_ResultadosTesteVariancia.F_TB_Ho = "= " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_Ha = "> " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_FcritE.Value = "N/A"
+        Frm_ResultadosTesteVariancia.F_TB_FcritD.Value = FcritD
+            If Fcalc > FcritD Then
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+    ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+        Frm_ResultadosTesteVariancia.F_TB_Ho = "= " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_Ha = "< " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_FcritE.Value = FcritE
+        Frm_ResultadosTesteVariancia.F_TB_FcritD.Value = "N/A"
+            If Fcalc < FcritE Then
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+    End If
+    
+ElseIf Cells(2, 4).Value = "Variance test" Then
+ If Sheets("VarianceTest").OP_VariânciasDiferentes = True Then
+        Frm_ResultadosTesteVariancia.F_TB_Ho = "The variances are eqqual"
+        Frm_ResultadosTesteVariancia.F_TB_Ha = "The variances are different"
+        Frm_ResultadosTesteVariancia.F_TB_FcritE.Value = FcritE
+        Frm_ResultadosTesteVariancia.F_TB_FcritD.Value = FcritD
+            If Fcalc < FcritE Or Fcalc > FcritD Then
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+    
+    ElseIf Sheets("VarianceTest").OP_VariânciaMaior = True Then
+        Frm_ResultadosTesteVariancia.F_TB_Ho = "Equal to " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_Ha = "> " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_FcritE.Value = "N/A"
+        Frm_ResultadosTesteVariancia.F_TB_FcritD.Value = FcritD
+            If Fcalc > FcritD Then
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+            
+    ElseIf Sheets("VarianceTest").OP_VariânciaMenor = True Then
+        Frm_ResultadosTesteVariancia.F_TB_Ho = "Equal to " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_Ha = "< " + RelaçãoVariância
+        Frm_ResultadosTesteVariancia.F_TB_FcritE.Value = FcritE
+        Frm_ResultadosTesteVariancia.F_TB_FcritD.Value = "N/A"
+            If Fcalc < FcritE Then
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Rejected"
+            Else
+            Frm_ResultadosTesteVariancia.F_TB_Conclusao.Value = "Null Hypothesis Accepted"
+            End If
+    End If
+End If
+    Frm_ResultadosTesteVariancia.F_TB_Fcalc.Value = Fcalc
+    Frm_ResultadosTesteVariancia.F_TB_pvalue.Value = pvalue
+             
+    Frm_ResultadosTesteVariancia.MultiPage1.Pages(0).Visible = False
+    Frm_ResultadosTesteVariancia.MultiPage1.Pages(1).Visible = True
+    Frm_ResultadosTesteVariancia.Show
+    
+End If
+
+End Sub
+
+
+Sub LimparcampoTestevariancia()
+  Range("C6:C105").Select
+    Selection.ClearContents
+    Range("E6:E105").Select
+    Selection.ClearContents
+    Cells(6, 3).Select
+End Sub
