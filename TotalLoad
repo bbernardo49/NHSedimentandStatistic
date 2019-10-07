@@ -1,0 +1,119 @@
+Static Function Log10(X)
+    Log10 = Log(X) / Log(10)
+End Function
+
+Sub DescargaSolidaTotal()
+With Range("AX6:BA100").Select
+    Selection.ClearContents
+    Cells(6, 3).Select
+End With
+Dim QL, V, L, p, Css As Double
+Dim q, k, Cr, R As Double
+Dim Qss, Qnm, Qst As Double
+Dim i As Long
+i = 6
+Do
+QL = Cells(i, 4).Value
+V = Cells(i, 5).Value
+L = Cells(i, 6).Value
+p = Cells(i, 7).Value
+Css = Cells(i, 8).Value
+If V = "" Then
+    MsgBox ("Please, Please in all the columns")
+    Exit Sub
+    Else
+End If
+Qss = 0.0864 * QL * Css
+Cells(i, 9).Value = Qss
+q = 10 ^ (3.43304 * Log10(V) + 1.62759)
+Cells(i, 50).Value = q
+If 0 < p And p <= 0.25 Then
+    Cr = 10 ^ (1.77789 * Log10(V) + 3.38327)
+ElseIf 0.25 < p And p <= 0.35 Then
+    Cr = 10 ^ (1.83313 * Log10(V) + 2.28804)
+ElseIf 0.35 < p And p <= 0.45 Then
+    Cr = 10 ^ (1.91198 * Log10(V) + 3.22954)
+ElseIf 0.45 < p And p <= 0.55 Then
+    Cr = 10 ^ (1.95237 * Log10(V) + 3.14938)
+ElseIf 0.55 < p And p <= 0.65 Then
+    Cr = 10 ^ (1.99233 * Log10(V) + 3.12121)
+ElseIf 0.65 < p And p <= 0.75 Then
+    Cr = 10 ^ (2.00733 * Log10(V) + 3.0845)
+ElseIf 0.75 < p And p <= 0.85 Then
+    Cr = 10 ^ (2.02671 * Log10(V) + 3.05268)
+ElseIf 0.85 < p And p <= 0.95 Then
+    Cr = 10 ^ (2.04681 * Log10(V) + 3.02448)
+ElseIf 0.95 < p And p <= 1.3 Then
+    Cr = 10 ^ (2.08166 * Log10(V) + 3.00447)
+ElseIf 1.3 < p And p <= 1.7 Then
+    Cr = 10 ^ (2.09989 * Log10(V) + 2.96742)
+ElseIf 1.7 < p And p <= 2.1 Then
+    Cr = 10 ^ (2.12905 * Log10(V) + 2.93638)
+ElseIf 2.1 < p And p <= 2.5 Then
+    Cr = 10 ^ (2.17974 * Log10(V) + 2.89768)
+ElseIf 2.5 < p And p <= 2.9 Then
+    Cr = 10 ^ (2.24195 * Log10(V) + 2.86623)
+ElseIf 2.9 < p And p <= 3.5 Then
+    Cr = 10 ^ (2.28931 * Log10(V) + 2.8185)
+ElseIf 3.5 < p And p <= 4 Then
+    Cr = 10 ^ (2.37053 * Log10(V) + 2.7402)
+ElseIf 4 < p And p <= 4.5 Then
+    Cr = 10 ^ (2.50353 * Log10(V) + 2.66752)
+ElseIf 4.5 < p And p <= 5.5 Then
+    Cr = 10 ^ (2.56145 * Log10(V) + 2.59443)
+ElseIf 5.5 < p And p <= 6.5 Then
+    Cr = 10 ^ (2.67423 * Log10(V) + 2.54559)
+ElseIf 6.5 < p And p <= 7.5 Then
+    Cr = 10 ^ (2.70694 * Log10(V) + 2.50313)
+ElseIf 7.5 < p And p <= 8.5 Then
+    Cr = 10 ^ (2.73865 * Log10(V) + 2.45991)
+ElseIf 8.5 < p And p <= 9.5 Then
+    Cr = 10 ^ (2.80396 * Log10(V) + 2.41703)
+ElseIf 9.5 < p And p <= 11 Then
+    Cr = 10 ^ (2.86217 * Log10(V) + 2.37377)
+ElseIf 11 < p And p <= 13 Then
+    Cr = 10 ^ (2.97983 * Log10(V) + 2.28777)
+ElseIf 13 < p And p <= 15 Then
+    Cr = 10 ^ (3.14335 * Log10(V) + 2.18752)
+ElseIf 15 < p And p <= 17 Then
+    Cr = 10 ^ (3.2563 * Log10(V) + 2.1107)
+ElseIf 17 < p And p <= 19 Then
+    Cr = 10 ^ (3.36367 * Log10(V) + 2.0258)
+ElseIf 19 < p And p <= 21 Then
+    Cr = 10 ^ (3.46377 * Log10(V) + 1.92548)
+ElseIf 21 < p And p <= 23 Then
+    Cr = 10 ^ (3.61733 * Log10(V) + 1.84452)
+ElseIf 23 < p And p <= 25 Then
+    Cr = 10 ^ (3.77564 * Log10(V) + 1.75208)
+ElseIf 25 < p And p <= 27 Then
+    Cr = 10 ^ (3.90944 * Log10(V) + 1.66039)
+ElseIf 27 < p And p <= 29 Then
+    Cr = 10 ^ (4.0426 * Log10(V) + 1.54473)
+ElseIf 29 < p And p <= 31 Then
+    Cr = 10 ^ (4.24476 * Log10(V) + 1.43257)
+Else
+    MsgBox ("Method not recommended for depths greater than 31m")
+    Exit Sub
+End If
+R = Css / Cr
+k = 10 ^ (0.481943 * Log10(R) + 0.0739316)
+Qnm = q * k * L
+Qst = Qss + Qnm
+Cells(i, 51).Value = Cr
+Cells(i, 52).Value = R
+Cells(i, 53).Value = k
+Cells(i, 10).Value = Qnm
+Cells(i, 11).Value = Qst
+i = i + 1
+Loop While Cells(i, 4) <> ""
+End Sub
+
+Sub Voltar_EstatisticTool()
+Sheets("Qst").Activate
+Planilha1.Visible = xlSheetVisible
+Planilha9.Visible = xlSheetHidden
+Frm_SedimentTool.Show
+End Sub
+
+
+
